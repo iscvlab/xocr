@@ -10,20 +10,20 @@
 
 ```mermaid
 flowchart TD
-    subgraph Upstream["Vanilla scb-10x/typhoon-ocr (v0.4.1)"]
-        U_In["Input PDF / Image"] --> U_Pop["External OS Poppler Subprocesses<br/>(pdfinfo + pdftoppm per page)"]
-        U_Pop --> U_Bug1["Bug #1: resize_if_needed(max_size=1800)<br/>Upscales >300px images to 1800px (5.1x token bloat)"]
-        U_Pop --> U_Bug2["Bug #2: image_to_base64png()<br/>Saves lossy JPEG (q=75) under PNG MIME header"]
-        U_Bug1 --> U_Cloud["Cloud API Default (api.opentyphoon.ai/v1)<br/>100% pages sent to VLM ('Blind VLM Tax')"]
+    subgraph Upstream ["Vanilla scb-10x/typhoon-ocr (v0.4.1)"]
+        U_In["Input PDF / Image"] --> U_Pop["External OS Poppler Subprocesses (pdfinfo + pdftoppm)"]
+        U_Pop --> U_Bug1["Bug #1: resize_if_needed(max_size=1800) upscales >300px images (5.1x token bloat)"]
+        U_Pop --> U_Bug2["Bug #2: image_to_base64png() saves lossy JPEG (q=75) under PNG MIME header"]
+        U_Bug1 --> U_Cloud["Cloud API Default (100% pages sent to VLM - Blind VLM Tax)"]
         U_Bug2 --> U_Cloud
     end
 
-    subgraph Upgraded["Upgraded iscvlab/xocr × Typhoon-OCR v1.5 Hybrid Engine (v2.1.0)"]
-        H_In["Input PDF / Image"] --> H_Fitz["Single-Pass C++ PyMuPDF (fitz) Router<br/>Zero Poppler OS Dependency"]
-        H_Fitz -->|"Digital Vector Page (>=80 chars, <=5% garble)"| H_Tier1["Tier 1: C++ PyMuPDF Vector + Two-Stage booktabs CSV<br/>(~15 ms/page, 0 MB VRAM)"]
-        H_Fitz -->|"Scanned / Complex Layout Page"| H_Resize["Fixed resize_if_needed(1800) + Lossless PNG<br/>Downscale-only, preserves sharp Thai tone marks"]
-        H_Resize --> H_VLM["Tier 2: 100% Local Typhoon-OCR v1.5<br/>• typhoon-ocr1.5-2b (Qwen3-VL-2B bf16)<br/>• typhoon-ocr1.5-3b-qat (Qwen2.5-VL-3B bf16 / 4-bit NF4)"]
-        H_VLM --> H_Norm["Thai PUA (U+F700..U+F71A) & Decomposed Sara-Am Normalizer<br/>+ HTML <table> (rowspan/colspan) -> RFC-4180 CSV & GFM"]
+    subgraph Upgraded ["Upgraded iscvlab/xocr x Typhoon-OCR v1.5 Hybrid Engine (v2.1.0)"]
+        H_In["Input PDF / Image"] --> H_Fitz["Single-Pass C++ PyMuPDF (fitz) Router (Zero Poppler Dependency)"]
+        H_Fitz -->|"Digital Vector Page"| H_Tier1["Tier 1: C++ PyMuPDF Vector + Two-Stage booktabs CSV (~15-97 ms/page)"]
+        H_Fitz -->|"Scanned / Complex Layout Page"| H_Resize["Fixed resize_if_needed(1800) + Lossless PNG (Downscale-only)"]
+        H_Resize --> H_VLM["Tier 2: 100% Local Typhoon-OCR v1.5 (2B bf16 / 3B-QAT bf16 & 4-bit NF4)"]
+        H_VLM --> H_Norm["Thai PUA & Sara-Am Normalizer + HTML table (rowspan/colspan) to CSV & GFM"]
         H_Tier1 --> H_Out["Unified Output: extracted_document.md + table_pX_Y.csv + ocr_manifest.json"]
         H_Norm --> H_Out
     end
@@ -76,15 +76,6 @@ All benchmarks were executed via `benchmarks/run_typhoon_xocr_benchmark.py` and 
 ---
 
 ### 3.2 Suite B1 - Sequential 1-by-1 VLM Comparison on SCBX AI Outlook 2025 Slide (`examples/test.png`, `2322×1284` → `1800×995`)
-
-```mermaid
-xychart-beta
-    title "Suite B1: Sequential 1-by-1 GPU Inference Latency (s, Bar) & Peak VRAM (GB, Line) on RTX 5060 Ti"
-    x-axis ["Typhoon-1.5-2B (bf16)", "Typhoon-1.5-3B-QAT (bf16)", "Typhoon-1.5-3B-QAT (4-bit NF4)"]
-    y-axis "Latency (s) / Peak VRAM (GB)" 0 --> 50
-    bar [23.74, 34.78, 47.21]
-    line [5.01, 8.36, 3.65]
-```
 
 | Model & Precision (Run 1-by-1 on `RTX 5060 Ti 16 GB`) | Architecture | Load Time ↓ (s) | Inference Time ↓ (s) | Input Tokens ↓ | Output Tokens | Speed ↑ (tok/s) | Loaded VRAM ↓ (MB) | Peak VRAM ↓ (MB) | Unloaded VRAM (MB) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -145,15 +136,6 @@ xychart-beta
 
 Evaluated directly on native images from SCB 10X's official **`typhoon-ai/ThaiOCRBench`** dataset (`benchmarks/run_comprehensive_thai_benchmark.py`, raw telemetry in `benchmarks/comprehensive_thai_benchmark_results.json`) across `4` tasks (`Full-page OCR`, `Table parsing`, `Document parsing`, `Handwritten content extraction`) with official PyThaiNLP normalized Levenshtein Edit Similarity (`EditSim`), Character Error Rate (`CER`), and Word `F1`:
 
-```mermaid
-xychart-beta
-    title "Suite C (ThaiOCRBench): Total Input Vision Tokens (x1000, Bar) & Table Parsing EditSim (%, Line)"
-    x-axis ["Vanilla v0.4.1 (2B)", "Upgraded xocr (2B bf16)", "Upgraded xocr (3B bf16)", "Upgraded xocr (3B 4-bit)"]
-    y-axis "Vision Tokens (x1000) / Table EditSim (%)" 0 --> 60
-    bar [30.94, 19.84, 25.07, 25.07]
-    line [41.64, 40.82, 50.75, 47.90]
-```
-
 | Configuration (Run 1-by-1 on `RTX 5060 Ti 16 GB`) | Total Input Tokens ↓ | Total Inference Time ↓ (s) | Mean Speed ↑ (`tok/s`) | Peak VRAM ↓ (MB) | CSV Tables Exported ↑ | Overall CER ↓ (%) | Table Parsing EditSim ↑ (%) | Handwritten EditSim ↑ (%) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **1. Vanilla `typhoon-ocr v0.4.1` (`2B bf16`, Upscale + JPEG `q=75`)** | `30,943` | `575.82 s` (`47.98 s/img`) | `22.59` | `6,034.8 MB` | `0` | `53.82%` | `41.64%` (`F1=61.69%`) | `30.84%` |
@@ -189,14 +171,6 @@ Upgraded \texttt{xocr} $\times$ \texttt{3B-QAT} (\texttt{4-bit NF4}) & 25,069 & 
 ### 3.6 Suite D - 62-Page Real Multi-Page Thai Environmental & Government PDF Benchmark (`D1`–`D4`)
 
 Evaluated across `4` real-world multi-page Thai PDFs (`62` pages total: historical Royal Gazette scans with fold-out maps, photographed/scanned paper factory contracts with heavy highlighter marks, mixed conservation reports, and 40-page BMA municipal budget plans):
-
-```mermaid
-xychart-beta
-    title "Suite D: End-to-End Multi-Page PDF Speedup Factor (x, Log-Scale Comparison)"
-    x-axis ["D3: 9p DNP Mixed Report (15.0x)", "D4: 40p BMA Action Plan (3326.1x)"]
-    y-axis "Speedup Factor (x vs Blind VLM-Every-Page)" 0 --> 3500
-    bar [15.0, 3326.1]
-```
 
 | Document Corpus (`62` Pages Total) | Pages & Document Type | Pipeline / Engine | Pages Sent to GPU VLM | Extracted Chars ↑ | CSV Tables Exported ↑ | Wall Time ↓ (`s`) | Speedup vs. Blind VLM / Baseline |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: |

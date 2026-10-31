@@ -20,15 +20,6 @@
   * **`--vlm-backend typhoon-3b-qat` (`bfloat16`)**: **Highest Table (`50.75%` EditSim, `+9.11%` over Vanilla) & Handwriting (`34.41%`) accuracy** + Royal Garuda Seal/Map recognition.
   * **`--vlm-backend typhoon-3b-4bit` (`4-bit NF4`)**: **Lowest Overall Character Error (`CER = 53.02%`)** at **lowest Peak VRAM (`4.32 GB`)** for 4-8 GB laptops.
 
-```mermaid
-xychart-beta horizontal
-    title "ThaiOCRBench Table Parsing Accuracy (EditSim %, Bar) & Speed (tok/s, Line)"
-    x-axis ["Vanilla v0.4.1 (2B)", "xocr x Typhoon-2B (bf16)", "xocr x Typhoon-3B (4-bit)", "xocr x Typhoon-3B (bf16)"]
-    y-axis "Score (%) / Speed (tok/s)" 0 --> 60
-    bar [41.64, 40.82, 47.90, 50.75]
-    line [22.59, 24.06, 15.68, 21.27]
-```
-
 ### Horizontal Bar Comparison (`RTX 5060 Ti 16 GB VRAM` • `1-by-1 Sequential GPU`)
 
 | Metric & Benchmark (`Higher = Better` except VRAM & Error) | Configuration / Engine | Visual Comparison Bar | Measured Result |
@@ -48,51 +39,60 @@ xychart-beta horizontal
 
 ```mermaid
 flowchart LR
-    In(["📄 PDF / Image"]) --> Router{"⚡ XOCR Smart Router"}
+    In["Input: PDF or Image"] --> Router{"XOCR Smart Page Router"}
+    Router -->|"Digital Vector Page"| Fast["Tier 1: C++ PyMuPDF + Booktabs (19-97 ms/page)"]
+    Router -->|"Scanned or Image Page"| Hub{"Pluggable Language VLM Hub"}
 
-    Router -->|"Digital Vector Page"| Fast["🚀 C++ PyMuPDF + Booktabs<br/>(19-97 ms/page • 0 GB VRAM)"]
-    Router -->|"Scanned / Image Page"| Hub{"🌐 Language VLM Hub"}
-
-    subgraph Packs["Pluggable Language Profiles"]
-        direction TB
-        TH["🇹🇭 Thai (LIVE)<br/>SCB 10X Typhoon-OCR v1.5<br/>+ PUA & Sara-Am Fix"]
-        EN["🇬🇧 English / Global (LIVE)<br/>Baidu Unlimited-OCR-2<br/>+ Long-Doc SR-SWA"]
-        JP["🇯🇵 Japanese<br/>(coming soon)"]
-        ZH["🇨🇳 Chinese / CJK<br/>(coming soon)"]
-        EU["🇪🇺 European / Multilingual<br/>(coming soon)"]
+    subgraph Profiles ["Language Profiles & VLM Backends"]
+        TH["Thai (LIVE): SCB 10X Typhoon-OCR v1.5 + PUA/Sara-Am Fix"]
+        EN["English / Global (LIVE): Baidu Unlimited-OCR-2"]
+        JP["Japanese (coming soon)"]
+        ZH["Chinese / CJK (coming soon)"]
+        EU["European / Multilingual (coming soon)"]
     end
 
-    Hub --> TH & EN
-    Hub -.-> JP & ZH & EU
+    Hub --> TH
+    Hub --> EN
+    Hub -.-> JP
+    Hub -.-> ZH
+    Hub -.-> EU
 
-    Fast --> Surgery["📊 Table & Glyph Surgery<br/>(booktabs + HTML rowspan/colspan)"]
-    TH & EN --> Surgery
-    Surgery --> Out(["✅ .md + .csv + .json"])
+    Fast --> Surgery["Table & Glyph Surgery (booktabs + HTML rowspan/colspan)"]
+    TH --> Surgery
+    EN --> Surgery
+    Surgery --> Out["Outputs: .md + .csv + .json"]
 ```
 
 ### B. Usage Workflow: CLI & AI Agent Skill (`/xocr`)
 
 ```mermaid
 flowchart LR
-    subgraph Step1["1. Entry Point"]
-        CLI["💻 Python CLI<br/>ocr_runner.py"]
-        Agent["🤖 Agent Skill<br/>/xocr"]
+    subgraph Step1 ["1. Entry Point"]
+        CLI["Python CLI: ocr_runner.py"]
+        Agent["AI Agent Skill: /xocr"]
     end
 
-    subgraph Step2["2. Mode & Model Selection"]
-        Auto["⚡ --mode auto<br/>Vector + Surgical VLM"]
-        T2B["🏎️ typhoon-2b (Default)<br/>Fastest + Most CSVs"]
-        T3B["🎯 typhoon-3b-qat<br/>Best Table & Handwriting"]
-        T4B["🪶 typhoon-3b-4bit<br/>4.3 GB VRAM • Best CER"]
+    subgraph Step2 ["2. Mode & Model Selection"]
+        Auto["Auto Router (mode: auto)"]
+        T2B["typhoon-2b (Default: Fastest + Most CSVs)"]
+        T3B["typhoon-3b-qat (Best Table & Handwriting)"]
+        T4B["typhoon-3b-4bit (4.3 GB VRAM + Best CER)"]
     end
 
-    subgraph Step3["3. Structured Outputs"]
-        MD["📝 extracted_document.md"]
-        CSV["📈 table_pX_Y.csv"]
-        JSON["🔍 ocr_manifest.json"]
+    subgraph Step3 ["3. Structured Outputs"]
+        MD["extracted_document.md"]
+        CSV["table_pX_Y.csv"]
+        JSON["ocr_manifest.json"]
     end
 
-    CLI & Agent --> Auto --> T2B & T3B & T4B --> MD & CSV & JSON
+    CLI --> Auto
+    Agent --> Auto
+    Auto --> T2B
+    Auto --> T3B
+    Auto --> T4B
+    T2B --> MD
+    T3B --> CSV
+    T4B --> JSON
 ```
 
 ### Six Core Engineering Innovations (`ocr_runner.py`)
@@ -128,14 +128,6 @@ Rather than comparing a C++ vector parser against a pixel Vision-Language Model 
 ### Axis 1: 3-Way PDF Extraction Pipeline Benchmark (Digital & Mixed PDFs)
 
 Measured live on the official 14-page **[`Unlimited-OCR.pdf` (v1)](https://github.com/baidu/Unlimited-OCR)** and 15-page **[`Unlimited-OCR-2.pdf` (v2)](https://github.com/baidu/Unlimited-OCR)** technical reports (reproducible via [`benchmarks/run_benchmark.py`](./benchmarks/run_benchmark.py)):
-
-```mermaid
-xychart-beta
-    title "Axis 1: 15-Page Technical PDF Extraction Latency (ms, Lower is Better) vs True Table Recall (%)"
-    x-axis ["1. Legacy pypdf + Render", "2. Default PyMuPDF (fitz)", "3. /xocr Hybrid Engine (v2.1.0)"]
-    y-axis "Total Wall-Clock Latency (ms)" 0 --> 3000
-    bar [2649.6, 1867.2, 1456.1]
-```
 
 | Pipeline / Method | `v1` Latency ↓ (14p) | `v2` Latency ↓ (15p) | `v1` True Tables ↑ (`5` Blocks) | `v2` True Tables ↑ (`4` Tables) | False-Positive Chart Tables ↓ | Thai `PUA` / `Sara Am` & Hybrid Routing |
 |:---|:---:|:---:|:---:|:---:|:---:|:---|
@@ -178,15 +170,6 @@ Default `PyMuPDF` (`page.find_tables()`) completely misses `Table 4` on Page 11 
 ### Axis 2: Sequential 1-by-1 GPU Benchmark (`SCB 10X Typhoon-OCR v1.5 × xocr` on `RTX 5060 Ti 16 GB VRAM`)
 
 Executed live via [`benchmarks/run_typhoon_xocr_benchmark.py`](./benchmarks/run_typhoon_xocr_benchmark.py) (full report in [`benchmarks/TYPHOON_OCR_UPGRADE_BENCHMARK.md`](./benchmarks/TYPHOON_OCR_UPGRADE_BENCHMARK.md), raw JSON telemetry in [`benchmarks/typhoon_xocr_benchmark_results.json`](./benchmarks/typhoon_xocr_benchmark_results.json)). Every model was tested **strictly 1-by-1 (sequentially)** with `torch.cuda.memory_allocated()` verified at **`8.12 MB`** before load and after unload:
-
-```mermaid
-xychart-beta
-    title "Axis 2: Sequential 1-by-1 GPU Inference Latency (s, Bar) & Peak VRAM (GB, Line) on RTX 5060 Ti"
-    x-axis ["Typhoon-1.5-2B (bf16)", "Typhoon-1.5-3B-QAT (bf16)", "Typhoon-1.5-3B-QAT (4-bit NF4)"]
-    y-axis "Latency (s) / Peak VRAM (GB)" 0 --> 50
-    bar [23.74, 34.78, 47.21]
-    line [5.01, 8.36, 3.65]
-```
 
 #### A. Model-by-Model GPU Telemetry on SCBX AI Outlook 2025 Slide (`examples/test.png`, `1800×995`)
 

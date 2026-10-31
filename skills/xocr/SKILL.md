@@ -16,26 +16,28 @@ High-throughput, zero-corruption PDF & image extraction engine (`/xocr`, legacy 
 
 ```mermaid
 flowchart LR
-    In(["📄 PDF / Image"]) --> Router{"⚡ XOCR Smart Router"}
+    In["Input: PDF or Image"] --> Router{"XOCR Smart Page Router"}
+    Router -->|"Digital Vector Page"| Fast["Tier 1: C++ PyMuPDF + Booktabs (19-97 ms/page)"]
+    Router -->|"Scanned or Image Page"| Hub{"Pluggable Language VLM Hub"}
 
-    Router -->|"Digital Vector Page"| Fast["🚀 C++ PyMuPDF + Booktabs<br/>(19-97 ms/page • 0 GB VRAM)"]
-    Router -->|"Scanned / Image Page"| Hub{"🌐 Language VLM Hub"}
-
-    subgraph Packs["Pluggable Language Profiles"]
-        direction TB
-        TH["🇹🇭 Thai (LIVE)<br/>SCB 10X Typhoon-OCR v1.5<br/>+ PUA & Sara-Am Fix"]
-        EN["🇬🇧 English / Global (LIVE)<br/>Baidu Unlimited-OCR-2<br/>+ Long-Doc SR-SWA"]
-        JP["🇯🇵 Japanese<br/>(coming soon)"]
-        ZH["🇨🇳 Chinese / CJK<br/>(coming soon)"]
-        EU["🇪🇺 European / Multilingual<br/>(coming soon)"]
+    subgraph Profiles ["Language Profiles & VLM Backends"]
+        TH["Thai (LIVE): SCB 10X Typhoon-OCR v1.5 + PUA/Sara-Am Fix"]
+        EN["English / Global (LIVE): Baidu Unlimited-OCR-2"]
+        JP["Japanese (coming soon)"]
+        ZH["Chinese / CJK (coming soon)"]
+        EU["European / Multilingual (coming soon)"]
     end
 
-    Hub --> TH & EN
-    Hub -.-> JP & ZH & EU
+    Hub --> TH
+    Hub --> EN
+    Hub -.-> JP
+    Hub -.-> ZH
+    Hub -.-> EU
 
-    Fast --> Surgery["📊 Table & Glyph Surgery<br/>(booktabs + HTML rowspan/colspan)"]
-    TH & EN --> Surgery
-    Surgery --> Out(["✅ .md + .csv + .json"])
+    Fast --> Surgery["Table & Glyph Surgery (booktabs + HTML rowspan/colspan)"]
+    TH --> Surgery
+    EN --> Surgery
+    Surgery --> Out["Outputs: .md + .csv + .json"]
 ```
 
 ### Core Engineering Guarantees
