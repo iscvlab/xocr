@@ -122,7 +122,7 @@ def compute_thaiocrbench_metrics(pred: str, gt: str, task_type: str) -> dict:
         s_ns = re.sub(r"\s+", "", s)
         if len(s_ns) < n:
             return {s_ns} if s_ns else set()
-        return {s_ns[i : i + n] for i in range(len(s_ns) - n + 1)}
+        return {s_ns[i:i + n] for i in range(len(s_ns) - n + 1)}
 
     ref_set = ngrams(gt_clean, 3)
     hyp_set = ngrams(pred_clean, 3)
@@ -243,7 +243,10 @@ def evaluate_model_on_thaiocrbench(
     compute ground-truth accuracy & latency/token telemetry, and completely unload VRAM.
     """
     vram_before = flush_gpu()
-    print(f"\n[Suite C] Evaluating {label} on {len(samples)} official ThaiOCRBench samples (VRAM before: {vram_before} MB)...")
+    print(
+        f"\n[Suite C] Evaluating {label} on {len(samples)} official ThaiOCRBench samples "
+        f"(VRAM before: {vram_before} MB)..."
+    )
     t_load0 = time.perf_counter()
 
     load_kwargs = {"device_map": "auto", "attn_implementation": "sdpa"}
@@ -330,9 +333,12 @@ def evaluate_model_on_thaiocrbench(
             total_infer_s += infer_s
             total_csv_tables += tables_found
 
+            orig_wh = f"{raw_img.size[0]}x{raw_img.size[1]}"
+            proc_wh = f"{proc_img.size[0]}x{proc_img.size[1]}"
             print(
-                f"  [{idx:02d}/{len(samples):02d}] {item['id']} ({item['task']}, {raw_img.size[0]}x{raw_img.size[1]} -> {proc_img.size[0]}x{proc_img.size[1]}) "
-                f"| in_tok={in_tokens} | {infer_s:.2f}s | EditSim={scores['edit_sim_pct']:.1f}% | F1={scores['f1_pct']:.1f}%"
+                f"  [{idx:02d}/{len(samples):02d}] {item['id']} ({item['task']}, {orig_wh} -> {proc_wh}) "
+                f"| in_tok={in_tokens} | {infer_s:.2f}s "
+                f"| EditSim={scores['edit_sim_pct']:.1f}% | F1={scores['f1_pct']:.1f}%"
             )
 
             per_sample.append(
@@ -406,10 +412,10 @@ def evaluate_model_on_thaiocrbench(
 def run_suite_d_multipage_pdfs() -> dict:
     """
     Run Suite D: 4 Real Multi-Page Thai Environmental & Government PDFs (62 Pages Total):
-    - D1: sub_langka_royal_decree_2529_oic_00003724.pdf (All 4 pages, Scanned 1986 Royal Gazette + 3186x7872 Fold-Out Map)
-    - D2: NONGKHAEM_ALL_FACTORY_CONTRACT_EXPIRATIONS_HIGHLIGHTED.pdf (All 9 pages, Scanned Highlighted Contract Tables)
-    - D3: dnp_sub_langka_official_datasheet.pdf (All 9 pages, DNP Conservation Area Report: 8 Vector + 1 Scanned Map)
-    - D4: bma_env-bureau-plan_fy2564_nongkhaem-all-projects_oic-00001680.pdf (All 40 pages, BMA Environment Bureau Plan)
+    - D1: sub_langka_royal_decree_2529_oic_00003724.pdf (All 4p, Scanned 1986 Royal Gazette + 3186x7872 Map)
+    - D2: NONGKHAEM_ALL_FACTORY_CONTRACT_EXPIRATIONS_HIGHLIGHTED.pdf (All 9p, Highlighted Contract Tables)
+    - D3: dnp_sub_langka_official_datasheet.pdf (All 9p, DNP Conservation Area Report: 8 Vector + 1 Map)
+    - D4: bma_env-bureau-plan_fy2564_nongkhaem-all-projects_oic-00001680.pdf (All 40p, BMA Environment Plan)
     """
     print("\n[Suite D] Running Multi-Page Real Thai Environmental & Government PDF Benchmarks (62 Pages Total)...")
 
@@ -450,7 +456,10 @@ def run_suite_d_multipage_pdfs() -> dict:
         ocr_runner._EASYOCR_READERS.clear()
         flush_gpu()
 
-    print("  -> [D1.2] Royal Gazette (All 4 Pages, including Page 3 3186x7872 Map) via xocr x typhoon-ocr1.5-2b (bf16)...")
+    print(
+        "  -> [D1.2] Royal Gazette (All 4 Pages, including Page 3 3186x7872 Map) "
+        "via xocr x typhoon-ocr1.5-2b (bf16)..."
+    )
     flush_gpu()
     with tempfile.TemporaryDirectory() as tmpdir:
         d1_2b_res = ocr_runner.extract_pdf(
@@ -467,7 +476,10 @@ def run_suite_d_multipage_pdfs() -> dict:
     flush_gpu()
 
     # D2: Full 9-Page Scanned/Photographed Paper Factory Contracts with Highlighter Marks
-    print("  -> [D2] Nongkhaem Highlighted Factory Contracts (All 9 Scanned Pages -> HTML <table> -> CSV) via xocr x typhoon-ocr1.5-2b...")
+    print(
+        "  -> [D2] Nongkhaem Highlighted Factory Contracts (All 9 Scanned Pages -> HTML <table> -> CSV) "
+        "via xocr x typhoon-ocr1.5-2b..."
+    )
     flush_gpu()
     d2_out_dir = os.path.join(BENCH_DIR, "out_d2_nongkhaem_9p")
     os.makedirs(d2_out_dir, exist_ok=True)
@@ -478,7 +490,10 @@ def run_suite_d_multipage_pdfs() -> dict:
     flush_gpu()
 
     # D3: Full 9-Page DNP Conservation Report (Hybrid Router vs Vanilla Blind VLM-Every-Page)
-    print("  -> [D3.1] Full 9-Page DNP Conservation Report via Upgraded xocr Hybrid Router (--mode auto, pages 1-9)...")
+    print(
+        "  -> [D3.1] Full 9-Page DNP Conservation Report via Upgraded xocr Hybrid Router "
+        "(--mode auto, pages 1-9)..."
+    )
     flush_gpu()
     with tempfile.TemporaryDirectory() as tmpdir:
         d3_hybrid = ocr_runner.extract_pdf(
@@ -486,7 +501,10 @@ def run_suite_d_multipage_pdfs() -> dict:
         )
     flush_gpu()
 
-    print("  -> [D3.2] Full 9-Page DNP Conservation Report via Vanilla Blind VLM-Every-Page (--mode vlm, pages 1-9)...")
+    print(
+        "  -> [D3.2] Full 9-Page DNP Conservation Report via Vanilla Blind VLM-Every-Page "
+        "(--mode vlm, pages 1-9)..."
+    )
     flush_gpu()
     with tempfile.TemporaryDirectory() as tmpdir:
         d3_blind_vlm = ocr_runner.extract_pdf(
@@ -495,7 +513,10 @@ def run_suite_d_multipage_pdfs() -> dict:
     flush_gpu()
 
     # D4: Full 40-Page BMA Department of Environment Action Plan (fy2564)
-    print("  -> [D4] Full 40-Page BMA Environment Bureau Action Plan via Upgraded xocr Hybrid Router (--mode auto, pages 1-40)...")
+    print(
+        "  -> [D4] Full 40-Page BMA Environment Bureau Action Plan via Upgraded xocr Hybrid Router "
+        "(--mode auto, pages 1-40)..."
+    )
     flush_gpu()
     d4_out_dir = os.path.join(BENCH_DIR, "out_d4_bma_env_40p")
     os.makedirs(d4_out_dir, exist_ok=True)

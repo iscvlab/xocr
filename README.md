@@ -4,10 +4,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-059669?style=flat-square)](./LICENSE)
 [![Speed](https://img.shields.io/badge/Vector%20Speed-~97%20ms%2Fpage-D97706?style=flat-square)](#2-empirical-3-axis-benchmarks)
 [![Thai VLM](https://img.shields.io/badge/Thai%20VLM-scb10x%2Ftyphoon--ocr1.5--2b%20%26%203b--qat-059669?style=flat-square)](https://huggingface.co/typhoon-ai/typhoon-ocr1.5-2b)
+[![Upstream PR](https://img.shields.io/badge/Upstream%20PR-scb--10x%2Ftyphoon--ocr%20%2315-7C3AED?style=flat-square)](https://github.com/scb-10x/typhoon-ocr/pull/15)
 [![Long-Doc VLM](https://img.shields.io/badge/Long--Doc%20VLM-baidu%2FUnlimited--OCR--2-2563EB?style=flat-square)](https://github.com/baidu/Unlimited-OCR)
 [![Lab](https://img.shields.io/badge/Lab-ISCV%20%7C%20Isocurve%20Research%20Lab%20(%40iscvlab)-121417?style=flat-square)](https://github.com/iscvlab)
 
-**XOCR** (`iscvlab/xocr`, slash command `/xocr`, legacy aliases `/ocrx`, `/ocr`, `/unlimited-ocr`) is a high-throughput, zero-corruption **PDF & Image Document AI Engine** engineered by **[ISCV | Isocurve Research Lab (`@iscvlab`)](https://github.com/iscvlab)**. It runs both as a **standalone Python CLI (`ocr_runner.py`)** for data science and financial/statutory ETL pipelines and as a **portable AI Agent Skill (`skills/xocr/SKILL.md`)** across **Google Antigravity (`IDE` & `agy` CLI), Claude Code, Grok, Cursor, and Codex**.
+**XOCR** (`iscvlab/xocr`, slash command `/xocr`, legacy aliases `/ocrx`, `/ocr`, `/unlimited-ocr`) is a high-throughput, zero-corruption **PDF & Image Document AI Engine** engineered by **[ISCV | Isocurve Research Lab (`@iscvlab`)](https://github.com/iscvlab)**. It runs both as a **standalone Python CLI (`ocr_runner.py`)** for data science and financial/statutory ETL pipelines and as a **portable AI Agent Skill (`skills/xocr/SKILL.md`)** across **Google Antigravity (`IDE` & `agy` CLI), Claude Code, Grok, Cursor, and Codex** (upstream improvements contributed to **[`scb-10x/typhoon-ocr` Pull Request #15](https://github.com/scb-10x/typhoon-ocr/pull/15)**).
 
 ---
 

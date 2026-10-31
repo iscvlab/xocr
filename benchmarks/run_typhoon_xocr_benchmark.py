@@ -19,7 +19,6 @@ import tempfile
 import time
 from unittest.mock import patch
 
-import fitz
 from PIL import Image, ImageDraw, ImageFont
 import torch
 from transformers import AutoModelForImageTextToText, AutoProcessor, BitsAndBytesConfig
@@ -219,7 +218,8 @@ def run_suite_a_micro_benchmarks() -> dict:
     pua_fixed_count = 0
     for s in corrupted_samples:
         cleaned = _cleanup_element_text(s)
-        if not any(0xF700 <= ord(ch) <= 0xF71A for ch in cleaned) and "\u0e4d\u0e32" not in cleaned and "\u0e4d\u0e49\u0e32" not in cleaned:
+        has_pua = any(0xF700 <= ord(ch) <= 0xF71A for ch in cleaned)
+        if not has_pua and "\u0e4d\u0e32" not in cleaned and "\u0e4d\u0e49\u0e32" not in cleaned:
             pua_fixed_count += 1
 
     # A4: Bug #4 Poppler-free PyMuPDF PDF rendering speed
