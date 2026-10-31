@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""High-speed, zero-corruption PDF & Image OCR engine for /xocr.
+"""High-speed, zero-corruption PDF & Image OCR engine for /xocr (v2.1.0).
 
 Features:
 1. Single-pass C++ PyMuPDF (`fitz`) coordinate-sorted text (`sort=True`) and
@@ -11,10 +11,14 @@ Features:
 3. Surgical Hybrid Page Router: scores each PDF page for text density, image
    coverage, and garble ratio (`needs_ocr`), rasterizing only scanned or
    corrupted pages in `--mode auto`.
-4. 4-Tier OCR Backend Ladder for scanned pages and standalone images:
+4. 4-Tier OCR Backend Ladder for scanned pages and standalone images
+   (`--vlm-backend {auto,typhoon-2b,typhoon-3b-qat,typhoon-3b-4bit,unlimited-ocr,sglang}`):
    Tier 1: Live SGLang Server (`http://127.0.0.1:10000` / `infer.py` with
            exact `--pdf` / `--image_dir` / `--output_dir` flags)
-   Tier 2: HuggingFace `baidu/Unlimited-OCR` VLM (`no_repeat_ngram_size=35`)
+   Tier 2: Local CUDA VLMs - SCB 10X `Typhoon-OCR v1.5` (`typhoon-ai/typhoon-ocr1.5-2b`
+           on `Qwen3-VL-2B` & `typhoon-ai/typhoon-ocr1.5-3b-qat` in `bfloat16` / `4-bit NF4`)
+           and Baidu `Unlimited-OCR-2` / `Unlimited-OCR` (`no_repeat_ngram_size=35`),
+           with automatic HTML `<table>` (`rowspan`/`colspan`) -> RFC-4180 `.csv` surgery
    Tier 3: Local `EasyOCR` (`['th', 'en']` / `['en']`)
    Tier 4: Local `pytesseract` / `fitz` Tesseract bridge
 5. Parallel page rasterization (`--workers`) and surgical page slicing
@@ -24,6 +28,8 @@ Features:
 import argparse
 import contextlib
 import csv
+import gc
+import html.parser
 import json
 import os
 import re
@@ -467,6 +473,272 @@ def rows_to_markdown(rows):
     return "\n".join(md_lines)
 
 
+class _HTMLTableParser(html.parser.HTMLParser):
+    """Parse HTML <table>...</table> blocks with full rowspan/colspan expansion."""
+
+    def __init__(self):
+        super().__init__()
+        self.tables = []
+        self._in_table = False
+        self._in_row = False
+        self._in_cell = False
+        self._cell_parts = []
+        self._rowspan = 1
+        self._colspan = 1
+        self._raw_rows = []
+        self._cur_row = []
+
+    def _flush_cell(self):
+        if self._in_cell:
+            self._in_cell = False
+            txt = normalize_text(
+                re.sub(r"\s+", " ", "".join(self._cell_parts)).strip()
+            )
+            self._cur_row.append((txt, self._rowspan, self._colspan))
+            self._cell_parts = []
+
+    def _flush_row(self):
+        self._flush_cell()
+        if self._in_row:
+            self._in_row = False
+            if self._cur_row:
+                self._raw_rows.append(self._cur_row)
+            self._cur_row = []
+
+    def handle_starttag(self, tag, attrs):
+        t = tag.lower()
+        if t == "table":
+            if self._in_table:
+                self._flush_row()
+                grid = self._expand_grid(self._raw_rows)
+                if grid:
+                    self.tables.append(grid)
+            self._in_table = True
+            self._raw_rows = []
+        elif self._in_table and t == "tr":
+            self._flush_row()
+            self._in_row = True
+            self._cur_row = []
+        elif self._in_row and t in ("td", "th"):
+            self._flush_cell()
+            self._in_cell = True
+            self._cell_parts = []
+            ad = {k.lower(): (v or "1") for k, v in attrs}
+            try:
+                self._rowspan = max(1, int(ad.get("rowspan", "1")))
+            except ValueError:
+                self._rowspan = 1
+            try:
+                self._colspan = max(1, int(ad.get("colspan", "1")))
+            except ValueError:
+                self._colspan = 1
+        elif self._in_cell and t == "br":
+            self._cell_parts.append(" ")
+
+    def handle_data(self, data):
+        if self._in_cell:
+            self._cell_parts.append(data)
+
+    def handle_endtag(self, tag):
+        t = tag.lower()
+        if t in ("td", "th") and self._in_cell:
+            self._flush_cell()
+        elif t == "tr" and self._in_row:
+            self._flush_row()
+        elif t == "table" and self._in_table:
+            self._flush_row()
+            self._in_table = False
+            grid = self._expand_grid(self._raw_rows)
+            if grid:
+                self.tables.append(grid)
+
+    @staticmethod
+    def _expand_grid(raw_rows):
+        if not raw_rows:
+            return []
+        occupied = {}
+        max_col = 0
+        num_rows = len(raw_rows)
+        for r_idx, row in enumerate(raw_rows):
+            c_idx = 0
+            for txt, rspan, cspan in row:
+                while (r_idx, c_idx) in occupied:
+                    c_idx += 1
+                for dr in range(rspan):
+                    for dc in range(cspan):
+                        nr = r_idx + dr
+                        nc = c_idx + dc
+                        num_rows = max(num_rows, nr + 1)
+                        max_col = max(max_col, nc + 1)
+                        occupied[(nr, nc)] = (
+                            txt if (dr == 0 and dc == 0) else ""
+                        )
+                c_idx += cspan
+        grid = []
+        for r in range(num_rows):
+            r_vals = [occupied.get((r, c), "") for c in range(max_col)]
+            if any(v.strip() for v in r_vals):
+                grid.append(r_vals)
+        return grid
+
+
+def extract_html_tables_from_text(text):
+    """Extract and clean HTML <table>...</table> blocks emitted by VLM OCR."""
+    if not text or "<table" not in text.lower():
+        return []
+    parser = _HTMLTableParser()
+    try:
+        parser.feed(text)
+    except Exception:  # nosec B110
+        return []
+    cleaned_tables = []
+    for raw_grid in parser.tables:
+        cleaned = clean_table_rows(raw_grid)
+        if cleaned:
+            cleaned_tables.append(cleaned)
+        elif raw_grid:
+            cleaned_tables.append(raw_grid)
+    return cleaned_tables
+
+
+TYPHOON_V15_PROMPT = """Extract all text from the image.
+
+
+Instructions:
+- Only return the clean Markdown.
+- Do not include any explanation or extra text.
+- You must include all information on the page.
+
+
+Formatting Rules:
+- Tables: Render tables using <table>...</table> in clean HTML format.
+- Equations: Render equations using LaTeX syntax with inline ($...$) and block ($$...$$).
+- Images/Charts/Diagrams: Wrap any clearly defined visual areas (e.g. charts, diagrams, pictures) in:
+
+
+<figure>
+Describe the image's main elements (people, objects, text), note any contextual clues (place, event, culture), mention visible text and its meaning, provide deeper analysis when relevant (especially for financial charts, graphs, or documents), comment on style or architecture if relevant, then give a concise overall summary. Describe in Thai.
+</figure>
+
+
+- Page Numbers: Wrap page numbers in <page_number>...</page_number> (e.g., <page_number>14</page_number>).
+- Checkboxes: Use ☐ for unchecked and ☑ for checked boxes.
+"""
+
+
+def _resize_image_if_needed(img, max_size=1800):
+    """Downscale PIL image only when width or height exceeds max_size (never upscale)."""
+    width, height = img.size
+    if width <= 0 or height <= 0 or max_size <= 0:
+        return img
+    if width > max_size or height > max_size:
+        from PIL import Image
+
+        if width >= height:
+            scale = max_size / float(width)
+            new_size = (max_size, max(1, int(height * scale)))
+        else:
+            scale = max_size / float(height)
+            new_size = (max(1, int(width * scale)), max_size)
+        return img.resize(new_size, Image.Resampling.LANCZOS)
+    return img
+
+
+def unload_vlm_models():
+    """Explicitly release CUDA VRAM caches between sequential VLM runs."""
+    gc.collect()
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except ImportError:
+        pass
+
+
+def _run_typhoon_transformers_vlm(
+    image_paths,
+    model_id="typhoon-ai/typhoon-ocr1.5-2b",
+    load_in_4bit=False,
+    max_new_tokens=2048,
+    max_image_dim=1800,
+):
+    """Run SCB 10X Typhoon-OCR v1.5 (Qwen3-VL-2B or Qwen2.5-VL-3B-QAT) 100% locally on GPU."""
+    import torch
+    from PIL import Image
+    from transformers import AutoModelForImageTextToText, AutoProcessor
+
+    unload_vlm_models()
+    load_kwargs = {
+        "device_map": "auto",
+        "attn_implementation": "sdpa",
+    }
+    if load_in_4bit:
+        from transformers import BitsAndBytesConfig
+
+        load_kwargs["quantization_config"] = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+            bnb_4bit_quant_type="nf4",
+        )
+    else:
+        load_kwargs["dtype"] = torch.bfloat16
+
+    model = AutoModelForImageTextToText.from_pretrained(
+        model_id, **load_kwargs
+    ).eval()
+    processor = AutoProcessor.from_pretrained(model_id)
+
+    vlm_texts = {}
+    try:
+        for img_p in image_paths:
+            pil_img = Image.open(img_p).convert("RGB")
+            pil_img = _resize_image_if_needed(pil_img, max_size=max_image_dim)
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": TYPHOON_V15_PROMPT},
+                        {"type": "image", "image": pil_img},
+                    ],
+                }
+            ]
+            inputs = processor.apply_chat_template(
+                messages,
+                tokenize=True,
+                add_generation_prompt=True,
+                return_dict=True,
+                return_tensors="pt",
+            ).to(model.device)
+            with torch.inference_mode():
+                generated_ids = model.generate(
+                    **inputs,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    repetition_penalty=1.1,
+                )
+            in_len = inputs["input_ids"].shape[1]
+            out_ids = [out[in_len:] for out in generated_ids]
+            decoded = processor.batch_decode(
+                out_ids,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=False,
+            )[0]
+            vlm_texts[img_p] = normalize_text(decoded.strip())
+            del inputs, generated_ids, out_ids
+    finally:
+        del model, processor
+        unload_vlm_models()
+
+    suffix = "_4bit" if load_in_4bit else "_bf16"
+    short_name = model_id.split("/")[-1].lower().replace("-", "_")
+    return {
+        "vlm_executed": True,
+        "engine": f"hf_{short_name}{suffix}_cuda",
+        "vlm_texts": vlm_texts,
+    }
+
+
 def _render_page_batch(batch_args):
     """Worker helper opening fitz.Document once per worker batch of pages."""
     pdf_path, dpi, items = batch_args
@@ -546,8 +818,36 @@ def _read_text_file(path):
     return ""
 
 
-def run_vlm_engine(target_path, output_dir, image_paths=None):
-    """Attempt SGLang server (`infer.py`) or HF `baidu/Unlimited-OCR` VLM."""
+def run_vlm_engine(
+    target_path, output_dir, image_paths=None, vlm_backend="auto"
+):
+    """Attempt SGLang server, SCB 10X Typhoon-OCR v1.5, or Baidu Unlimited-OCR VLM."""
+    targets = image_paths or [target_path]
+
+    # Explicit Typhoon-OCR v1.5 local backends
+    if vlm_backend in ("typhoon-2b", "typhoon-3b-qat", "typhoon-3b-4bit"):
+        try:
+            import torch
+
+            if torch.cuda.is_available():
+                t_model = (
+                    "typhoon-ai/typhoon-ocr1.5-2b"
+                    if vlm_backend == "typhoon-2b"
+                    else "typhoon-ai/typhoon-ocr1.5-3b-qat"
+                )
+                return _run_typhoon_transformers_vlm(
+                    targets,
+                    model_id=t_model,
+                    load_in_4bit=(vlm_backend == "typhoon-3b-4bit"),
+                )
+        except Exception as exc:  # nosec B110
+            return {
+                "vlm_executed": False,
+                "engine": "local_fallback",
+                "vlm_texts": {},
+                "reason": f"Typhoon VLM ({vlm_backend}) failed: {exc}",
+            }
+
     script_dir = os.path.dirname(os.path.abspath(__file__))
     candidates = [
         os.path.join(script_dir, "infer.py"),
@@ -558,21 +858,21 @@ def run_vlm_engine(target_path, output_dir, image_paths=None):
     )
 
     sglang_live = False
-    try:
-        import urllib.request
+    if vlm_backend in ("auto", "sglang"):
+        try:
+            import urllib.request
 
-        with urllib.request.urlopen(
-            "http://127.0.0.1:10000/health", timeout=1.5
-        ) as resp:
-            sglang_live = resp.status == 200
-    except Exception:  # nosec B110
-        sglang_live = False
+            with urllib.request.urlopen(
+                "http://127.0.0.1:10000/health", timeout=1.5
+            ) as resp:
+                sglang_live = resp.status == 200
+        except Exception:  # nosec B110
+            sglang_live = False
 
     if infer_script and sglang_live:
         stage_dir = os.path.join(output_dir, "_vlm_stage")
         shutil.rmtree(stage_dir, ignore_errors=True)
         os.makedirs(stage_dir, exist_ok=True)
-        targets = image_paths or [target_path]
         staged_map = {}
         for img_p in targets:
             if img_p.lower().endswith(".pdf"):
@@ -615,100 +915,126 @@ def run_vlm_engine(target_path, output_dir, image_paths=None):
                 "stdout_tail": (proc.stdout or "")[-400:],
             }
 
-    try:
-        import torch
+    # In "auto" mode on CUDA, try Typhoon-OCR v1.5 (2B) first if available, then Unlimited-OCR-2
+    if vlm_backend == "auto":
+        try:
+            import torch
 
-        if torch.cuda.is_available():
-            from transformers import AutoModel, AutoTokenizer
+            if torch.cuda.is_available():
+                typhoon_env = os.environ.get(
+                    "TYPHOON_OCR_MODEL", "typhoon-ai/typhoon-ocr1.5-2b"
+                ).strip()
+                return _run_typhoon_transformers_vlm(
+                    targets, model_id=typhoon_env, load_in_4bit=False
+                )
+        except Exception:  # nosec B110
+            pass
 
-            env_model = os.environ.get("UNLIMITED_OCR_MODEL", "").strip()
-            model_candidates = (
-                [env_model]
-                if env_model
-                else ["baidu/Unlimited-OCR-2", "baidu/Unlimited-OCR"]
-            )
-            tokenizer = None
-            model = None
-            model_name = model_candidates[0]
-            for cand_model in model_candidates:
-                try:
-                    tokenizer = AutoTokenizer.from_pretrained(
-                        cand_model, trust_remote_code=True
-                    )
-                    model = (
-                        AutoModel.from_pretrained(
-                            cand_model,
-                            trust_remote_code=True,
-                            use_safetensors=True,
-                            torch_dtype=torch.bfloat16,
+    if vlm_backend in ("auto", "unlimited-ocr"):
+        try:
+            import torch
+
+            if torch.cuda.is_available():
+                from transformers import AutoModel, AutoTokenizer
+
+                unload_vlm_models()
+                env_model = os.environ.get("UNLIMITED_OCR_MODEL", "").strip()
+                model_candidates = (
+                    [env_model]
+                    if env_model
+                    else ["baidu/Unlimited-OCR-2", "baidu/Unlimited-OCR"]
+                )
+                tokenizer = None
+                model = None
+                model_name = model_candidates[0]
+                for cand_model in model_candidates:
+                    try:
+                        tokenizer = AutoTokenizer.from_pretrained(
+                            cand_model, trust_remote_code=True
                         )
-                        .eval()
-                        .cuda()
-                    )
-                    model_name = cand_model
-                    break
-                except Exception:  # nosec B110
-                    continue
-            if model is None or tokenizer is None:
-                raise RuntimeError("No Unlimited-OCR model available")
+                        model = (
+                            AutoModel.from_pretrained(
+                                cand_model,
+                                trust_remote_code=True,
+                                use_safetensors=True,
+                                torch_dtype=torch.bfloat16,
+                            )
+                            .eval()
+                            .cuda()
+                        )
+                        model_name = cand_model
+                        break
+                    except Exception:  # nosec B110
+                        continue
+                if model is None or tokenizer is None:
+                    raise RuntimeError("No Unlimited-OCR model available")
 
-            vlm_texts = {}
-            if image_paths and len(image_paths) > 1:
-                res = model.infer_multi(
-                    tokenizer,
-                    prompt="<image>Multi page parsing.",
-                    image_files=image_paths,
-                    output_path=output_dir,
-                    image_size=1024,
-                    max_length=32768,
-                    no_repeat_ngram_size=35,
-                    ngram_window=1024,
-                    save_results=True,
-                )
-                if isinstance(res, tuple):
-                    res = res[0]
-                if isinstance(res, list):
-                    for img_p, txt in zip(image_paths, res):
-                        vlm_texts[img_p] = normalize_text(str(txt or ""))
-                elif isinstance(res, str):
-                    if "<PAGE>" in res:
-                        parts = [
-                            p.strip()
-                            for p in res.split("<PAGE>")
-                            if p.strip()
-                        ]
-                        for img_p, txt in zip(image_paths, parts):
-                            vlm_texts[img_p] = normalize_text(txt)
+                vlm_texts = {}
+                try:
+                    if image_paths and len(image_paths) > 1:
+                        res = model.infer_multi(
+                            tokenizer,
+                            prompt="<image>Multi page parsing.",
+                            image_files=image_paths,
+                            output_path=output_dir,
+                            image_size=1024,
+                            max_length=32768,
+                            no_repeat_ngram_size=35,
+                            ngram_window=1024,
+                            save_results=True,
+                        )
+                        if isinstance(res, tuple):
+                            res = res[0]
+                        if isinstance(res, list):
+                            for img_p, txt in zip(image_paths, res):
+                                vlm_texts[img_p] = normalize_text(
+                                    str(txt or "")
+                                )
+                        elif isinstance(res, str):
+                            if "<PAGE>" in res:
+                                parts = [
+                                    p.strip()
+                                    for p in res.split("<PAGE>")
+                                    if p.strip()
+                                ]
+                                for img_p, txt in zip(image_paths, parts):
+                                    vlm_texts[img_p] = normalize_text(txt)
+                            else:
+                                vlm_texts[image_paths[0]] = normalize_text(res)
                     else:
-                        vlm_texts[image_paths[0]] = normalize_text(res)
-            else:
-                img_target = image_paths[0] if image_paths else target_path
-                res = model.infer(
-                    tokenizer,
-                    prompt="<image>document parsing.",
-                    image_file=img_target,
-                    output_path=output_dir,
-                    base_size=1024,
-                    image_size=640,
-                    crop_mode=True,
-                    max_length=32768,
-                    no_repeat_ngram_size=35,
-                    ngram_window=128,
-                    save_results=True,
-                )
-                if isinstance(res, tuple):
-                    res = res[0]
-                if isinstance(res, str):
-                    vlm_texts[img_target] = normalize_text(
-                        res.replace("<PAGE>", "").strip()
-                    )
-            return {
-                "vlm_executed": True,
-                "engine": f"hf_{model_name.split('/')[-1].lower()}_cuda",
-                "vlm_texts": vlm_texts,
-            }
-    except Exception:  # nosec B110
-        pass
+                        img_target = (
+                            image_paths[0] if image_paths else target_path
+                        )
+                        res = model.infer(
+                            tokenizer,
+                            prompt="<image>document parsing.",
+                            image_file=img_target,
+                            output_path=output_dir,
+                            base_size=1024,
+                            image_size=640,
+                            crop_mode=True,
+                            max_length=32768,
+                            no_repeat_ngram_size=35,
+                            ngram_window=128,
+                            save_results=True,
+                        )
+                        if isinstance(res, tuple):
+                            res = res[0]
+                        if isinstance(res, str):
+                            vlm_texts[img_target] = normalize_text(
+                                res.replace("<PAGE>", "").strip()
+                            )
+                finally:
+                    del model, tokenizer
+                    unload_vlm_models()
+
+                return {
+                    "vlm_executed": True,
+                    "engine": f"hf_{model_name.split('/')[-1].lower()}_cuda",
+                    "vlm_texts": vlm_texts,
+                }
+        except Exception:  # nosec B110
+            pass
 
     return {
         "vlm_executed": False,
@@ -726,6 +1052,7 @@ def extract_pdf(
     pages_arg=None,
     workers=4,
     langs=None,
+    vlm_backend="auto",
 ):
     """Single-pass C++ PyMuPDF text/table extractor with surgical OCR."""
     t_start = time.time()
@@ -847,7 +1174,10 @@ def extract_pdf(
         image_paths = [rendered_map[p_idx] for p_idx in pages_needing_ocr]
 
         vlm_info = run_vlm_engine(
-            pdf_path, output_dir, image_paths=image_paths
+            pdf_path,
+            output_dir,
+            image_paths=image_paths,
+            vlm_backend=vlm_backend,
         )
         if vlm_info.get("vlm_executed"):
             vlm_map = vlm_info.get("vlm_texts") or {}
@@ -858,6 +1188,23 @@ def extract_pdf(
                     page_records[p_idx]["text"] = v_txt
                     page_records[p_idx]["char_count"] = non_ws_count(v_txt)
                     page_records[p_idx]["engine"] = vlm_eng
+                    if page_records[p_idx]["table_count"] == 0:
+                        html_tabs = extract_html_tables_from_text(v_txt)
+                        page_num = p_idx + 1
+                        for rows in html_tabs:
+                            page_records[p_idx]["table_count"] += 1
+                            tables_extracted += 1
+                            t_idx = page_records[p_idx]["table_count"]
+                            csv_name = f"table_p{page_num}_{t_idx}.csv"
+                            csv_path = os.path.join(output_dir, csv_name)
+                            with open(
+                                csv_path, "w", encoding="utf-8-sig", newline=""
+                            ) as f_csv:
+                                writer = csv.writer(f_csv)
+                                writer.writerows(rows)
+                            page_records[p_idx]["md_tables"].append(
+                                rows_to_markdown(rows)
+                            )
         else:
             for p_idx, img_path in zip(pages_needing_ocr, image_paths):
                 ocr_res = ocr_image_local(img_path, langs=langs)
@@ -935,8 +1282,10 @@ def extract_pdf(
     return res
 
 
-def extract_standalone_image(image_path, output_dir, langs=None):
-    """Extract text from a standalone image (.png/.jpg/.webp/.tif)."""
+def extract_standalone_image(
+    image_path, output_dir, langs=None, vlm_backend="auto"
+):
+    """Extract text and HTML tables from a standalone image (.png/.jpg/.webp/.tif)."""
     t_start = time.time()
     os.makedirs(output_dir, exist_ok=True)
     text_out_path = os.path.join(output_dir, "extracted_text.txt")
@@ -944,7 +1293,10 @@ def extract_standalone_image(image_path, output_dir, langs=None):
     manifest_path = os.path.join(output_dir, "ocr_manifest.json")
 
     vlm_info = run_vlm_engine(
-        image_path, output_dir, image_paths=[image_path]
+        image_path,
+        output_dir,
+        image_paths=[image_path],
+        vlm_backend=vlm_backend,
     )
     extracted_text = ""
     engine_used = vlm_info.get("engine", "none")
@@ -957,11 +1309,27 @@ def extract_standalone_image(image_path, output_dir, langs=None):
         extracted_text = ocr_res["text"]
         engine_used = ocr_res["engine"]
 
+    html_tabs = extract_html_tables_from_text(extracted_text)
+    md_tables = []
+    tables_extracted = 0
+    for rows in html_tabs:
+        tables_extracted += 1
+        csv_name = f"table_p1_{tables_extracted}.csv"
+        csv_path = os.path.join(output_dir, csv_name)
+        with open(csv_path, "w", encoding="utf-8-sig", newline="") as f_csv:
+            writer = csv.writer(f_csv)
+            writer.writerows(rows)
+        md_tables.append(rows_to_markdown(rows))
+
     with open(text_out_path, "w", encoding="utf-8") as f_txt:
         f_txt.write(extracted_text + "\n")
     with open(md_out_path, "w", encoding="utf-8") as f_md:
         f_md.write(f"## Image OCR ({os.path.basename(image_path)})\n\n")
         f_md.write(extracted_text + "\n")
+        if md_tables:
+            f_md.write("\n### Extracted Tables (Page 1)\n")
+            for t_i, md_tab in enumerate(md_tables, start=1):
+                f_md.write(f"\n#### Table 1.{t_i}\n\n{md_tab}\n")
 
     elapsed_ms = round((time.time() - t_start) * 1000, 1)
     nws_chars = non_ws_count(extracted_text)
@@ -969,14 +1337,14 @@ def extract_standalone_image(image_path, output_dir, langs=None):
         "input": image_path,
         "pages_processed": 1,
         "total_chars": nws_chars,
-        "tables_extracted": 0,
+        "tables_extracted": tables_extracted,
         "engine_used": engine_used,
         "elapsed_ms": elapsed_ms,
         "pages": [
             {
                 "page": 1,
                 "char_count": nws_chars,
-                "table_count": 0,
+                "table_count": tables_extracted,
                 "garble_ratio": 0.0,
                 "needs_ocr": True,
                 "engine": engine_used,
@@ -990,7 +1358,7 @@ def extract_standalone_image(image_path, output_dir, langs=None):
         "status": "success" if extracted_text else "empty_or_failed",
         "pages_processed": 1,
         "total_chars": nws_chars,
-        "tables_extracted": 0,
+        "tables_extracted": tables_extracted,
         "engine_used": engine_used,
         "elapsed_ms": elapsed_ms,
         "text_path": text_out_path,
@@ -1002,7 +1370,7 @@ def extract_standalone_image(image_path, output_dir, langs=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Unlimited-OCR & High-Speed PDF/Table Extractor"
+        description="Unlimited-OCR, Typhoon-OCR v1.5 & High-Speed PDF/Table Extractor"
     )
     parser.add_argument(
         "input_path", nargs="?", help="Path to target PDF or image file"
@@ -1018,6 +1386,20 @@ def main():
         choices=["auto", "pdf", "vlm"],
         default="auto",
         help="Extraction mode: auto (default hybrid), pdf (vector), or vlm",
+    )
+    parser.add_argument(
+        "--vlm-backend",
+        dest="vlm_backend",
+        choices=[
+            "auto",
+            "typhoon-2b",
+            "typhoon-3b-qat",
+            "typhoon-3b-4bit",
+            "unlimited-ocr",
+            "sglang",
+        ],
+        default="auto",
+        help="VLM backend for scanned pages/images (default: auto)",
     )
     parser.add_argument(
         "--dpi", type=int, default=300, help="Render DPI for scanned pages"
@@ -1058,6 +1440,7 @@ def main():
         "input": input_path,
         "output_dir": output_dir,
         "mode": args.mode,
+        "vlm_backend": args.vlm_backend,
     }
 
     if input_path.lower().endswith(".pdf"):
@@ -1069,11 +1452,12 @@ def main():
             pages_arg=args.pages,
             workers=args.workers,
             langs=langs,
+            vlm_backend=args.vlm_backend,
         )
         summary.update(pdf_res)
     else:
         img_res = extract_standalone_image(
-            input_path, output_dir, langs=langs
+            input_path, output_dir, langs=langs, vlm_backend=args.vlm_backend
         )
         summary.update(img_res)
 

@@ -1,0 +1,187 @@
+{
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 5060 Ti",
+    "total_vram_mb": 16310.6,
+    "pytorch_version": "2.8.0+cu129",
+    "execution_mode": "strictly_sequential_1_by_1_zero_vram_division"
+  },
+  "suite_a_micro_benchmarks": {
+    "bug1_resize_upscaling_tax": {
+      "vanilla_size": [
+        1800,
+        1200
+      ],
+      "upgraded_size": [
+        600,
+        400
+      ],
+      "vanilla_in_tokens": 2362,
+      "upgraded_in_tokens": 462,
+      "token_reduction_pct": 80.4,
+      "vanilla_infer_s": 23.015,
+      "upgraded_infer_s": 20.325,
+      "speedup_x": 1.13
+    },
+    "bug2_png_vs_jpeg_fidelity": {
+      "vanilla_magic_hex": "ffd8ffe0",
+      "upgraded_magic_hex": "89504e470d0a1a0a",
+      "upgraded_is_lossless_png": true
+    },
+    "bug3_thai_pua_sara_am": {
+      "samples_tested": 2,
+      "samples_100pct_normalized": 2
+    },
+    "bug4_pymupdf_poppler_free_render": {
+      "mediabox_pt": [
+        595.3200073242188,
+        841.9199829101562
+      ],
+      "render_1800px_ms": 65.03,
+      "base64_len": 367640
+    },
+    "feature6_scanned_table_to_csv": {
+      "engine_used": "hf_typhoon_ocr1.5_2b_bf16_cuda",
+      "tables_extracted": 1,
+      "elapsed_ms": 21356.3,
+      "csv_lines": [
+        "หมวดหมู่โครงการ,ไตรมาส 1,ไตรมาส 2,รวมทั้งสิ้น",
+        "1. ระบบประมวลผลเอกสาร (Document OCR),12.50,15.75,28.25",
+        "2. โครงสร้างพื้นฐาน GPU Cluster,45.00,30.00,75.00",
+        "3. งานวิจัยโมเดลภาษาไทย (Thai VLM),18.20,22.80,41.00",
+        "รวมงบประมาณสุทธิ,75.70,68.55,144.25"
+      ]
+    }
+  },
+  "suite_b_sequential_gpu_benchmarks": {
+    "b1_scbx_slide_test_png": {
+      "typhoon_15_2b_bf16": {
+        "model_id": "typhoon-ai/typhoon-ocr1.5-2b",
+        "precision": "bfloat16",
+        "load_s": 8.999,
+        "infer_s": 23.737,
+        "in_tokens": 1970,
+        "out_tokens": 561,
+        "tok_per_s": 23.63,
+        "vram_before_mb": 8.12,
+        "vram_loaded_mb": 4066.08,
+        "vram_peak_mb": 5007.28,
+        "vram_after_unload_mb": 8.12,
+        "char_count": 1216,
+        "html_tables_detected": 0,
+        "text_preview": "SCB* AI Outlook 2025\n<page_number>2</page_number>\n\n# SCBX AI Outlook 2025: Beaconing the Future of Artificial Intelligence\n\nปลายปี 2022 หลังจากที่ OpenAI เปิดตัว ChatGPT ทำให้ทั้งโลกได้รู้จักกับ Generative AI หรือ Gen AI โลกทั้งโลกก็ไม่เหมือนเดิมอีกต่อไป\n\nAI เป็นเรื่องที่ใกล้ตัวผู้คนมากขึ้น ในฐานะ ‘ตัวเปลี่ยนเกม’ ทั้งในระดับบุคคลและองค์กร ที่ทำให้ช"
+      },
+      "typhoon_15_3b_qat_bf16": {
+        "model_id": "typhoon-ai/typhoon-ocr1.5-3b-qat",
+        "precision": "bfloat16",
+        "load_s": 11.87,
+        "infer_s": 34.778,
+        "in_tokens": 2549,
+        "out_tokens": 718,
+        "tok_per_s": 20.65,
+        "vram_before_mb": 8.12,
+        "vram_loaded_mb": 7170.16,
+        "vram_peak_mb": 8358.23,
+        "vram_after_unload_mb": 8.12,
+        "char_count": 1490,
+        "html_tables_detected": 0,
+        "text_preview": "SCBX AI Outlook 2025\n<page_number>2</page_number>\n\n# SCBX AI Outlook 2025: Beaconing the Future of Artificial Intelligence\n\nปลายปี 2022 หลังจากที่ OpenAI เปิดตัว ChatGPT ทำให้ทั้งโลกได้รู้จักกับ Generative AI หรือ Gen AI โลกทั้งโลกก็ไม่เหมือนเดิมอีกต่อไป\n\nAI เป็นเรื่องที่ใกล้ตัวผู้คนมากขึ้น ในฐานะ ‘ตัวเปลี่ยนเกม’ ทั้งในระดับบุคคลและองค์กร ที่ทำให้ช"
+      },
+      "typhoon_15_3b_qat_4bit": {
+        "model_id": "typhoon-ai/typhoon-ocr1.5-3b-qat",
+        "precision": "4bit-nf4",
+        "load_s": 14.461,
+        "infer_s": 47.209,
+        "in_tokens": 2549,
+        "out_tokens": 725,
+        "tok_per_s": 15.36,
+        "vram_before_mb": 8.12,
+        "vram_loaded_mb": 2466.96,
+        "vram_peak_mb": 3654.28,
+        "vram_after_unload_mb": 8.12,
+        "char_count": 1538,
+        "html_tables_detected": 0,
+        "text_preview": "SCBX AI Outlook 2025\n<page_number>2</page_number>\n\n# SCBX AI Outlook 2025: Beaconing the Future of Artificial Intelligence\n\nปลายปี 2022 หลังจากที่ OpenAI เปิดตัว ChatGPT ทำให้ทั้งโลกได้รู้จักกับ Generative AI หรือ Gen AI โลกทั้งโลกก็ไม่เหมือนเดิมอีกต่อไป\n\nAI เป็นเรื่องที่ใกล้ตัวผู้คนมากขึ้น ในฐานะ ‘ตัวเปลี่ยนเกม’ ทั้งในระดับบุคคลและองค์กร ที่ทำให้ช"
+      }
+    },
+    "b2_scanned_thai_royal_gazette_p1": {
+      "easyocr_baseline": {
+        "engine": "easyocr",
+        "infer_s": 2.803,
+        "char_count": 470,
+        "text_preview": "ฉบับพ์เศษ  ฺหน้า จา ๓ ทอนท ๒๓๕ ราชก็จจานเบกษา\nเลม\n๓ ๑ ธนวาคม ๒&๒6\nพระราชกฤษฎีกา\nกำหนดบรเวณที่ดินบาซับลังกา  ในท้องทตำเลกุดตาเพชร และตำบลลำสนธํ  อำเภอชัยบาดาล  จังหวัดลพบุร ให้เบ็นเขตรักษาพันธุ์สัตว์บา พ.ศ. ๒๕๒ 5\nภูมิพลอดุลยเดชฺ ฺป.ร.\nให้ไว้ ณ วันที่ ๒๖ ธนวาคม พ.ศ. ๒&๒8 เข็นบีที่ ๔ @ ในรัชกาลบ้ออุบัน พระบาทสมเด็จพระบรมนทรมหาภุมิพลอดุลยเดช มพระบรมราช"
+      },
+      "typhoon_15_2b_bf16": {
+        "model_id": "typhoon-ai/typhoon-ocr1.5-2b",
+        "precision": "bfloat16",
+        "load_s": 8.847,
+        "infer_s": 18.534,
+        "in_tokens": 2362,
+        "out_tokens": 411,
+        "tok_per_s": 22.18,
+        "vram_before_mb": 8.12,
+        "vram_loaded_mb": 4066.08,
+        "vram_peak_mb": 5326.37,
+        "vram_after_unload_mb": 8.12,
+        "char_count": 601,
+        "html_tables_detected": 0,
+        "text_preview": "ฉบับพิเศษ หน้า ๑๓\nเล่ม ๑๐๓ ตอนที่ ๒๓๕ ราชกิจจานุเบกษา ๓๑ ธันวาคม ๒๕๒๙\n\n<figure>\nภาพตราแผ่นดินของประเทศไทย หรือ ตราราชสีห์ ซึ่งเป็นสัญลักษณ์ของรัฐบาลและใช้ในเอกสารราชการต่างๆ\n</figure>\n\n**พระราชกฤษฎีกา**\nกำหนดบริเวณที่ดินป่าซับลังกา ในท้องที่ตำบลกุดตาเพชร และตำบลลำสนธิ อำเภอชัยบาดาล จังหวัดลพบุรี ให้เป็นเขตรักษาพันธุ์สัตว์ป่า พ.ศ. ๒๕๒๙\n\n---\n\nภูมิพลอ"
+      },
+      "typhoon_15_3b_qat_bf16": {
+        "model_id": "typhoon-ai/typhoon-ocr1.5-3b-qat",
+        "precision": "bfloat16",
+        "load_s": 11.731,
+        "infer_s": 21.914,
+        "in_tokens": 3061,
+        "out_tokens": 413,
+        "tok_per_s": 18.85,
+        "vram_before_mb": 8.12,
+        "vram_loaded_mb": 7170.16,
+        "vram_peak_mb": 8820.27,
+        "vram_after_unload_mb": 8.12,
+        "char_count": 604,
+        "html_tables_detected": 0,
+        "text_preview": "ฉบับพิเศษ หน้า ๑๓ เล่ม ๑๐๓ ตอนที่ ๒๓๕ ราชกิจจานุเบกษา ๓๑ ธันวาคม ๒๕๒๙\n\n<figure>\nภาพตราครุฑ ซึ่งเป็นสัญลักษณ์ของราชการไทย ตั้งอยู่ด้านบนของประกาศ แสดงถึงอำนาจและเกียรติยศของแผ่นดิน\n</figure>\n\n**พระราชกฤษฎีกา**\nกำหนดบริเวณที่ดินป่าชับลังกา ในท้องที่ตำบลกุดตาเพชร และตำบลลำสนธิ อำเภอชัยบาดาล จังหวัดลพบุรี ให้เป็นเขตรักษาพันธุ์สัตว์ป่า พ.ศ. ๒๕๒๙\n\nภูมิพล"
+      },
+      "typhoon_15_3b_qat_4bit": {
+        "model_id": "typhoon-ai/typhoon-ocr1.5-3b-qat",
+        "precision": "4bit-nf4",
+        "load_s": 13.562,
+        "infer_s": 31.623,
+        "in_tokens": 3061,
+        "out_tokens": 461,
+        "tok_per_s": 14.58,
+        "vram_before_mb": 8.12,
+        "vram_loaded_mb": 2466.96,
+        "vram_peak_mb": 4114.43,
+        "vram_after_unload_mb": 8.12,
+        "char_count": 692,
+        "html_tables_detected": 0,
+        "text_preview": "ฉบับพิเศษ หน้า ๑๓ เล่ม ๑๐๓ ตอนที่ ๒๓๕ ราชกิจจานุเบกษา ๓๑ ธันวาคม ๒๕๒๙\n\n<figure>\nภาพตราครุฑสีดำบนพื้นหลังสีขาว ครุฑมีปีกกางออกและถืออาวุธต่างๆ เช่น หอก และไม้เท้า ด้านล่างของตราครุฑมีข้อความภาษาไทยเขียนว่า \"พระบรมราชโองการ\" ซึ่งเป็นตราประจำตำแหน่งหรือตราพระราชทานในประเทศไทย\n</figure>\n\n**พระราชกฤษฎีกา**\nกำหนดบริเวณที่ดินป่าซับลังกา ในท้องที่ตำบลกุดตา"
+      }
+    },
+    "b3_digital_thai_gov_pdf_pages_1_to_3": {
+      "xocr_hybrid_auto": {
+        "pages_processed": 3,
+        "low_text_pages_routed_to_vlm": [
+          2
+        ],
+        "total_chars": 3029,
+        "tables_extracted": 0,
+        "elapsed_ms": 30528.4
+      },
+      "vanilla_blind_vlm_every_page": {
+        "pages_processed": 3,
+        "low_text_pages_routed_to_vlm": [
+          1,
+          2,
+          3
+        ],
+        "total_chars": 3571,
+        "tables_extracted": 0,
+        "elapsed_ms": 113429.8
+      },
+      "hybrid_speedup_x": 3.7
+    }
+  },
+  "total_benchmark_wall_s": 481.03
+}

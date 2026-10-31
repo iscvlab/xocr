@@ -1,0 +1,1519 @@
+{
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 5060 Ti",
+    "total_vram_mb": 16310.6,
+    "pytorch_version": "2.8.0+cu129",
+    "execution_mode": "strictly_sequential_1_by_1_zero_vram_division"
+  },
+  "suite_c_official_thaiocrbench": {
+    "vanilla_v041_2b_bf16": {
+      "label": "Vanilla typhoon-ocr v0.4.1 (typhoon-ocr1.5-2b, Bug #1 Upscale + Bug #2 JPEG q=75)",
+      "model_id": "typhoon-ai/typhoon-ocr1.5-2b",
+      "precision": "bfloat16",
+      "vanilla_v041_mode": true,
+      "samples_evaluated": 12,
+      "load_s": 9.485,
+      "total_infer_s": 575.82,
+      "mean_infer_s_per_sample": 47.98,
+      "total_in_tokens": 30943,
+      "mean_in_tokens_per_sample": 2578.6,
+      "total_out_tokens": 13009,
+      "mean_tok_per_s": 22.59,
+      "vram_before_mb": 0.0,
+      "vram_loaded_mb": 4057.96,
+      "vram_peak_mb": 6034.8,
+      "vram_after_unload_mb": 8.12,
+      "total_csv_tables_extracted": 0,
+      "mean_edit_sim_pct": 59.5,
+      "mean_cer_pct": 53.82,
+      "mean_f1_pct": 71.79,
+      "mean_combined_score_pct": 65.65,
+      "by_task": {
+        "Full-page OCR": {
+          "count": 3,
+          "mean_in_tokens": 2418.0,
+          "mean_infer_s": 70.62,
+          "mean_edit_sim_pct": 90.87,
+          "mean_f1_pct": 96.76,
+          "mean_combined_pct": 93.81
+        },
+        "Table parsing": {
+          "count": 4,
+          "mean_in_tokens": 2558.0,
+          "mean_infer_s": 37.45,
+          "mean_edit_sim_pct": 41.64,
+          "mean_f1_pct": 61.69,
+          "mean_combined_pct": 51.66
+        },
+        "Document parsing": {
+          "count": 3,
+          "mean_in_tokens": 2679.3,
+          "mean_infer_s": 63.13,
+          "mean_edit_sim_pct": 71.06,
+          "mean_f1_pct": 82.99,
+          "mean_combined_pct": 77.03
+        },
+        "Handwritten content extraction": {
+          "count": 2,
+          "mean_in_tokens": 2709.5,
+          "mean_infer_s": 12.4,
+          "mean_edit_sim_pct": 30.84,
+          "mean_f1_pct": 37.73,
+          "mean_combined_pct": 34.28
+        }
+      },
+      "per_sample": [
+        {
+          "row_idx": 457,
+          "id": "557BFDF4",
+          "task": "Document parsing",
+          "category": "Education",
+          "orig_size": [
+            2481,
+            3508
+          ],
+          "proc_size": [
+            1273,
+            1800
+          ],
+          "in_tokens": 2474,
+          "out_tokens": 1511,
+          "infer_s": 67.198,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 68.29,
+            "cer_pct": 36.82,
+            "f1_pct": 85.11,
+            "combined_score_pct": 76.7
+          }
+        },
+        {
+          "row_idx": 458,
+          "id": "C56EA8A9",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            762,
+            1106
+          ],
+          "proc_size": [
+            1240,
+            1800
+          ],
+          "in_tokens": 2418,
+          "out_tokens": 1650,
+          "infer_s": 72.267,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 93.56,
+            "cer_pct": 6.44,
+            "f1_pct": 94.98,
+            "combined_score_pct": 94.27
+          }
+        },
+        {
+          "row_idx": 459,
+          "id": "0B0966A3",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            741,
+            1067
+          ],
+          "proc_size": [
+            1250,
+            1800
+          ],
+          "in_tokens": 2418,
+          "out_tokens": 2030,
+          "infer_s": 89.334,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 92.87,
+            "cer_pct": 7.13,
+            "f1_pct": 97.62,
+            "combined_score_pct": 95.25
+          }
+        },
+        {
+          "row_idx": 462,
+          "id": "56B2C74B",
+          "task": "Full-page OCR",
+          "category": "Technology",
+          "orig_size": [
+            763,
+            1105
+          ],
+          "proc_size": [
+            1242,
+            1800
+          ],
+          "in_tokens": 2418,
+          "out_tokens": 1157,
+          "infer_s": 50.245,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 86.18,
+            "cer_pct": 13.82,
+            "f1_pct": 97.67,
+            "combined_score_pct": 91.92
+          }
+        },
+        {
+          "row_idx": 467,
+          "id": "3200C1DB",
+          "task": "Document parsing",
+          "category": "Lifestyle",
+          "orig_size": [
+            1539,
+            2151
+          ],
+          "proc_size": [
+            1287,
+            1800
+          ],
+          "in_tokens": 2474,
+          "out_tokens": 680,
+          "infer_s": 29.827,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 54.4,
+            "cer_pct": 82.11,
+            "f1_pct": 70.65,
+            "combined_score_pct": 62.53
+          }
+        },
+        {
+          "row_idx": 1350,
+          "id": "A91C0516",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            970,
+            621
+          ],
+          "proc_size": [
+            1800,
+            1152
+          ],
+          "in_tokens": 2250,
+          "out_tokens": 337,
+          "infer_s": 14.866,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 55.99,
+            "cer_pct": 55.8,
+            "f1_pct": 77.66,
+            "combined_score_pct": 66.82
+          }
+        },
+        {
+          "row_idx": 1355,
+          "id": "0E44FCF1",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            768,
+            960
+          ],
+          "proc_size": [
+            1440,
+            1800
+          ],
+          "in_tokens": 2793,
+          "out_tokens": 441,
+          "infer_s": 20.92,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 24.05,
+            "cer_pct": 100.0,
+            "f1_pct": 15.29,
+            "combined_score_pct": 19.67
+          }
+        },
+        {
+          "row_idx": 1367,
+          "id": "032450D5",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            1346,
+            1795
+          ],
+          "proc_size": [
+            1349,
+            1800
+          ],
+          "in_tokens": 2626,
+          "out_tokens": 67,
+          "infer_s": 3.885,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 37.62,
+            "cer_pct": 100.0,
+            "f1_pct": 60.18,
+            "combined_score_pct": 48.9
+          }
+        },
+        {
+          "row_idx": 2245,
+          "id": "2743E2EC",
+          "task": "Table parsing",
+          "category": "Government",
+          "orig_size": [
+            1242,
+            1583
+          ],
+          "proc_size": [
+            1412,
+            1800
+          ],
+          "in_tokens": 2698,
+          "out_tokens": 1292,
+          "infer_s": 57.108,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 34.06,
+            "cer_pct": 100.0,
+            "f1_pct": 68.57,
+            "combined_score_pct": 51.31
+          }
+        },
+        {
+          "row_idx": 2248,
+          "id": "FA023C09",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            680,
+            871
+          ],
+          "proc_size": [
+            1405,
+            1800
+          ],
+          "in_tokens": 2698,
+          "out_tokens": 941,
+          "infer_s": 42.118,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 68.19,
+            "cer_pct": 34.23,
+            "f1_pct": 80.71,
+            "combined_score_pct": 74.45
+          }
+        },
+        {
+          "row_idx": 2249,
+          "id": "2426EF70",
+          "task": "Document parsing",
+          "category": "Insurance",
+          "orig_size": [
+            1200,
+            1311
+          ],
+          "proc_size": [
+            1647,
+            1800
+          ],
+          "in_tokens": 3090,
+          "out_tokens": 2048,
+          "infer_s": 92.358,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 90.5,
+            "cer_pct": 9.5,
+            "f1_pct": 93.21,
+            "combined_score_pct": 91.86
+          }
+        },
+        {
+          "row_idx": 2261,
+          "id": "421E777A",
+          "task": "Table parsing",
+          "category": "Medical",
+          "orig_size": [
+            4032,
+            3024
+          ],
+          "proc_size": [
+            1800,
+            1350
+          ],
+          "in_tokens": 2586,
+          "out_tokens": 855,
+          "infer_s": 35.694,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 8.33,
+            "cer_pct": 100.0,
+            "f1_pct": 19.83,
+            "combined_score_pct": 14.08
+          }
+        }
+      ]
+    },
+    "upgraded_v210_2b_bf16": {
+      "label": "Upgraded xocr v2.1.0 x typhoon-ocr1.5-2b (bfloat16, Lossless PNG + Native Size + Thai Normalizer)",
+      "model_id": "typhoon-ai/typhoon-ocr1.5-2b",
+      "precision": "bfloat16",
+      "vanilla_v041_mode": false,
+      "samples_evaluated": 12,
+      "load_s": 9.146,
+      "total_infer_s": 527.65,
+      "mean_infer_s_per_sample": 43.97,
+      "total_in_tokens": 19836,
+      "mean_in_tokens_per_sample": 1653.0,
+      "total_out_tokens": 12694,
+      "mean_tok_per_s": 24.06,
+      "vram_before_mb": 8.12,
+      "vram_loaded_mb": 4066.58,
+      "vram_peak_mb": 5564.37,
+      "vram_after_unload_mb": 8.12,
+      "total_csv_tables_extracted": 8,
+      "mean_edit_sim_pct": 55.26,
+      "mean_cer_pct": 60.57,
+      "mean_f1_pct": 69.73,
+      "mean_combined_score_pct": 62.5,
+      "by_task": {
+        "Full-page OCR": {
+          "count": 3,
+          "mean_in_tokens": 1047.0,
+          "mean_infer_s": 65.93,
+          "mean_edit_sim_pct": 84.5,
+          "mean_f1_pct": 89.47,
+          "mean_combined_pct": 86.99
+        },
+        "Table parsing": {
+          "count": 4,
+          "mean_in_tokens": 1584.0,
+          "mean_infer_s": 32.41,
+          "mean_edit_sim_pct": 40.82,
+          "mean_f1_pct": 64.47,
+          "mean_combined_pct": 52.64
+        },
+        "Document parsing": {
+          "count": 3,
+          "mean_in_tokens": 2246.7,
+          "mean_infer_s": 59.09,
+          "mean_edit_sim_pct": 63.46,
+          "mean_f1_pct": 81.84,
+          "mean_combined_pct": 72.65
+        },
+        "Handwritten content extraction": {
+          "count": 2,
+          "mean_in_tokens": 1809.5,
+          "mean_infer_s": 11.47,
+          "mean_edit_sim_pct": 27.98,
+          "mean_f1_pct": 32.48,
+          "mean_combined_pct": 30.23
+        }
+      },
+      "per_sample": [
+        {
+          "row_idx": 457,
+          "id": "557BFDF4",
+          "task": "Document parsing",
+          "category": "Education",
+          "orig_size": [
+            2481,
+            3508
+          ],
+          "proc_size": [
+            1273,
+            1800
+          ],
+          "in_tokens": 2474,
+          "out_tokens": 1428,
+          "infer_s": 60.07,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 58.17,
+            "cer_pct": 59.41,
+            "f1_pct": 86.22,
+            "combined_score_pct": 72.2
+          }
+        },
+        {
+          "row_idx": 458,
+          "id": "C56EA8A9",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            762,
+            1106
+          ],
+          "proc_size": [
+            762,
+            1106
+          ],
+          "in_tokens": 1074,
+          "out_tokens": 1584,
+          "infer_s": 63.833,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 80.64,
+            "cer_pct": 19.36,
+            "f1_pct": 90.41,
+            "combined_score_pct": 85.53
+          }
+        },
+        {
+          "row_idx": 459,
+          "id": "0B0966A3",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            741,
+            1067
+          ],
+          "proc_size": [
+            741,
+            1067
+          ],
+          "in_tokens": 993,
+          "out_tokens": 2048,
+          "infer_s": 82.459,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 78.95,
+            "cer_pct": 21.05,
+            "f1_pct": 82.97,
+            "combined_score_pct": 80.96
+          }
+        },
+        {
+          "row_idx": 462,
+          "id": "56B2C74B",
+          "task": "Full-page OCR",
+          "category": "Technology",
+          "orig_size": [
+            763,
+            1105
+          ],
+          "proc_size": [
+            763,
+            1105
+          ],
+          "in_tokens": 1074,
+          "out_tokens": 1294,
+          "infer_s": 51.504,
+          "html_tables_extracted": 2,
+          "scores": {
+            "edit_sim_pct": 93.91,
+            "cer_pct": 6.09,
+            "f1_pct": 95.02,
+            "combined_score_pct": 94.47
+          }
+        },
+        {
+          "row_idx": 467,
+          "id": "3200C1DB",
+          "task": "Document parsing",
+          "category": "Lifestyle",
+          "orig_size": [
+            1539,
+            2151
+          ],
+          "proc_size": [
+            1287,
+            1800
+          ],
+          "in_tokens": 2474,
+          "out_tokens": 695,
+          "infer_s": 29.679,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 53.53,
+            "cer_pct": 85.04,
+            "f1_pct": 69.73,
+            "combined_score_pct": 61.63
+          }
+        },
+        {
+          "row_idx": 1350,
+          "id": "A91C0516",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            970,
+            621
+          ],
+          "proc_size": [
+            970,
+            621
+          ],
+          "in_tokens": 804,
+          "out_tokens": 337,
+          "infer_s": 14.5,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 55.99,
+            "cer_pct": 55.8,
+            "f1_pct": 77.66,
+            "combined_score_pct": 66.82
+          }
+        },
+        {
+          "row_idx": 1355,
+          "id": "0E44FCF1",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            768,
+            960
+          ],
+          "proc_size": [
+            768,
+            960
+          ],
+          "in_tokens": 993,
+          "out_tokens": 459,
+          "infer_s": 18.431,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 20.11,
+            "cer_pct": 100.0,
+            "f1_pct": 9.79,
+            "combined_score_pct": 14.95
+          }
+        },
+        {
+          "row_idx": 1367,
+          "id": "032450D5",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            1346,
+            1795
+          ],
+          "proc_size": [
+            1346,
+            1795
+          ],
+          "in_tokens": 2626,
+          "out_tokens": 68,
+          "infer_s": 4.504,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 35.85,
+            "cer_pct": 100.0,
+            "f1_pct": 55.17,
+            "combined_score_pct": 45.51
+          }
+        },
+        {
+          "row_idx": 2245,
+          "id": "2743E2EC",
+          "task": "Table parsing",
+          "category": "Government",
+          "orig_size": [
+            1242,
+            1583
+          ],
+          "proc_size": [
+            1242,
+            1583
+          ],
+          "in_tokens": 2145,
+          "out_tokens": 1309,
+          "infer_s": 56.241,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 33.52,
+            "cer_pct": 100.0,
+            "f1_pct": 68.57,
+            "combined_score_pct": 51.05
+          }
+        },
+        {
+          "row_idx": 2248,
+          "id": "FA023C09",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            680,
+            871
+          ],
+          "proc_size": [
+            680,
+            871
+          ],
+          "in_tokens": 801,
+          "out_tokens": 1111,
+          "infer_s": 45.129,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 55.96,
+            "cer_pct": 58.82,
+            "f1_pct": 79.87,
+            "combined_score_pct": 67.91
+          }
+        },
+        {
+          "row_idx": 2249,
+          "id": "2426EF70",
+          "task": "Document parsing",
+          "category": "Insurance",
+          "orig_size": [
+            1200,
+            1311
+          ],
+          "proc_size": [
+            1200,
+            1311
+          ],
+          "in_tokens": 1792,
+          "out_tokens": 2048,
+          "infer_s": 87.527,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 78.67,
+            "cer_pct": 21.33,
+            "f1_pct": 89.58,
+            "combined_score_pct": 84.12
+          }
+        },
+        {
+          "row_idx": 2261,
+          "id": "421E777A",
+          "task": "Table parsing",
+          "category": "Medical",
+          "orig_size": [
+            4032,
+            3024
+          ],
+          "proc_size": [
+            1800,
+            1350
+          ],
+          "in_tokens": 2586,
+          "out_tokens": 313,
+          "infer_s": 13.773,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 17.82,
+            "cer_pct": 100.0,
+            "f1_pct": 31.78,
+            "combined_score_pct": 24.8
+          }
+        }
+      ]
+    },
+    "upgraded_v210_3b_qat_bf16": {
+      "label": "Upgraded xocr v2.1.0 x typhoon-ocr1.5-3b-qat (bfloat16)",
+      "model_id": "typhoon-ai/typhoon-ocr1.5-3b-qat",
+      "precision": "bfloat16",
+      "vanilla_v041_mode": false,
+      "samples_evaluated": 12,
+      "load_s": 15.275,
+      "total_infer_s": 661.4,
+      "mean_infer_s_per_sample": 55.12,
+      "total_in_tokens": 25069,
+      "mean_in_tokens_per_sample": 2089.1,
+      "total_out_tokens": 14068,
+      "mean_tok_per_s": 21.27,
+      "vram_before_mb": 8.12,
+      "vram_loaded_mb": 7169.54,
+      "vram_peak_mb": 9117.87,
+      "vram_after_unload_mb": 8.12,
+      "total_csv_tables_extracted": 6,
+      "mean_edit_sim_pct": 57.74,
+      "mean_cer_pct": 56.59,
+      "mean_f1_pct": 69.89,
+      "mean_combined_score_pct": 63.82,
+      "by_task": {
+        "Full-page OCR": {
+          "count": 3,
+          "mean_in_tokens": 1285.3,
+          "mean_infer_s": 73.52,
+          "mean_edit_sim_pct": 76.16,
+          "mean_f1_pct": 86.02,
+          "mean_combined_pct": 81.09
+        },
+        "Table parsing": {
+          "count": 4,
+          "mean_in_tokens": 2018.5,
+          "mean_infer_s": 31.2,
+          "mean_edit_sim_pct": 50.75,
+          "mean_f1_pct": 64.06,
+          "mean_combined_pct": 57.41
+        },
+        "Document parsing": {
+          "count": 3,
+          "mean_in_tokens": 2860.0,
+          "mean_infer_s": 73.27,
+          "mean_edit_sim_pct": 64.2,
+          "mean_f1_pct": 83.25,
+          "mean_combined_pct": 73.73
+        },
+        "Handwritten content extraction": {
+          "count": 2,
+          "mean_in_tokens": 2279.5,
+          "mean_infer_s": 48.12,
+          "mean_edit_sim_pct": 34.41,
+          "mean_f1_pct": 37.31,
+          "mean_combined_pct": 35.87
+        }
+      },
+      "per_sample": [
+        {
+          "row_idx": 457,
+          "id": "557BFDF4",
+          "task": "Document parsing",
+          "category": "Education",
+          "orig_size": [
+            2481,
+            3508
+          ],
+          "proc_size": [
+            1273,
+            1800
+          ],
+          "in_tokens": 3125,
+          "out_tokens": 1773,
+          "infer_s": 87.866,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 53.58,
+            "cer_pct": 81.28,
+            "f1_pct": 87.88,
+            "combined_score_pct": 70.73
+          }
+        },
+        {
+          "row_idx": 458,
+          "id": "C56EA8A9",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            762,
+            1106
+          ],
+          "proc_size": [
+            762,
+            1106
+          ],
+          "in_tokens": 1325,
+          "out_tokens": 1515,
+          "infer_s": 68.375,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 79.28,
+            "cer_pct": 20.72,
+            "f1_pct": 89.3,
+            "combined_score_pct": 84.29
+          }
+        },
+        {
+          "row_idx": 459,
+          "id": "0B0966A3",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            741,
+            1067
+          ],
+          "proc_size": [
+            741,
+            1067
+          ],
+          "in_tokens": 1233,
+          "out_tokens": 1841,
+          "infer_s": 83.0,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 64.56,
+            "cer_pct": 35.44,
+            "f1_pct": 79.79,
+            "combined_score_pct": 72.17
+          }
+        },
+        {
+          "row_idx": 462,
+          "id": "56B2C74B",
+          "task": "Full-page OCR",
+          "category": "Technology",
+          "orig_size": [
+            763,
+            1105
+          ],
+          "proc_size": [
+            763,
+            1105
+          ],
+          "in_tokens": 1298,
+          "out_tokens": 1512,
+          "infer_s": 69.177,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 84.63,
+            "cer_pct": 15.37,
+            "f1_pct": 88.98,
+            "combined_score_pct": 86.81
+          }
+        },
+        {
+          "row_idx": 467,
+          "id": "3200C1DB",
+          "task": "Document parsing",
+          "category": "Lifestyle",
+          "orig_size": [
+            1539,
+            2151
+          ],
+          "proc_size": [
+            1287,
+            1800
+          ],
+          "in_tokens": 3189,
+          "out_tokens": 678,
+          "infer_s": 34.422,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 56.83,
+            "cer_pct": 75.95,
+            "f1_pct": 72.06,
+            "combined_score_pct": 64.45
+          }
+        },
+        {
+          "row_idx": 1350,
+          "id": "A91C0516",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            970,
+            621
+          ],
+          "proc_size": [
+            970,
+            621
+          ],
+          "in_tokens": 1015,
+          "out_tokens": 282,
+          "infer_s": 13.285,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 65.9,
+            "cer_pct": 36.61,
+            "f1_pct": 82.72,
+            "combined_score_pct": 74.31
+          }
+        },
+        {
+          "row_idx": 1355,
+          "id": "0E44FCF1",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            768,
+            960
+          ],
+          "proc_size": [
+            768,
+            960
+          ],
+          "in_tokens": 1202,
+          "out_tokens": 2048,
+          "infer_s": 91.145,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 29.25,
+            "cer_pct": 100.0,
+            "f1_pct": 17.99,
+            "combined_score_pct": 23.62
+          }
+        },
+        {
+          "row_idx": 1367,
+          "id": "032450D5",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            1346,
+            1795
+          ],
+          "proc_size": [
+            1346,
+            1795
+          ],
+          "in_tokens": 3357,
+          "out_tokens": 51,
+          "infer_s": 5.089,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 39.58,
+            "cer_pct": 100.0,
+            "f1_pct": 56.64,
+            "combined_score_pct": 48.11
+          }
+        },
+        {
+          "row_idx": 2245,
+          "id": "2743E2EC",
+          "task": "Table parsing",
+          "category": "Government",
+          "orig_size": [
+            1242,
+            1583
+          ],
+          "proc_size": [
+            1242,
+            1583
+          ],
+          "in_tokens": 2753,
+          "out_tokens": 1120,
+          "infer_s": 53.755,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 57.27,
+            "cer_pct": 61.56,
+            "f1_pct": 70.17,
+            "combined_score_pct": 63.72
+          }
+        },
+        {
+          "row_idx": 2248,
+          "id": "FA023C09",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            680,
+            871
+          ],
+          "proc_size": [
+            680,
+            871
+          ],
+          "in_tokens": 989,
+          "out_tokens": 800,
+          "infer_s": 36.358,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 65.62,
+            "cer_pct": 34.38,
+            "f1_pct": 76.03,
+            "combined_score_pct": 70.83
+          }
+        },
+        {
+          "row_idx": 2249,
+          "id": "2426EF70",
+          "task": "Document parsing",
+          "category": "Insurance",
+          "orig_size": [
+            1200,
+            1311
+          ],
+          "proc_size": [
+            1200,
+            1311
+          ],
+          "in_tokens": 2266,
+          "out_tokens": 2048,
+          "infer_s": 97.53,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 82.2,
+            "cer_pct": 17.8,
+            "f1_pct": 89.82,
+            "combined_score_pct": 86.01
+          }
+        },
+        {
+          "row_idx": 2261,
+          "id": "421E777A",
+          "task": "Table parsing",
+          "category": "Medical",
+          "orig_size": [
+            4032,
+            3024
+          ],
+          "proc_size": [
+            1800,
+            1350
+          ],
+          "in_tokens": 3317,
+          "out_tokens": 400,
+          "infer_s": 21.4,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 14.2,
+            "cer_pct": 100.0,
+            "f1_pct": 27.31,
+            "combined_score_pct": 20.76
+          }
+        }
+      ]
+    },
+    "upgraded_v210_3b_qat_4bit": {
+      "label": "Upgraded xocr v2.1.0 x typhoon-ocr1.5-3b-qat (4-bit NF4)",
+      "model_id": "typhoon-ai/typhoon-ocr1.5-3b-qat",
+      "precision": "4bit-nf4",
+      "vanilla_v041_mode": false,
+      "samples_evaluated": 12,
+      "load_s": 15.185,
+      "total_infer_s": 772.44,
+      "mean_infer_s_per_sample": 64.37,
+      "total_in_tokens": 25069,
+      "mean_in_tokens_per_sample": 2089.1,
+      "total_out_tokens": 12114,
+      "mean_tok_per_s": 15.68,
+      "vram_before_mb": 8.12,
+      "vram_loaded_mb": 2479.52,
+      "vram_peak_mb": 4426.67,
+      "vram_after_unload_mb": 8.12,
+      "total_csv_tables_extracted": 5,
+      "mean_edit_sim_pct": 58.96,
+      "mean_cer_pct": 53.02,
+      "mean_f1_pct": 69.31,
+      "mean_combined_score_pct": 64.14,
+      "by_task": {
+        "Full-page OCR": {
+          "count": 3,
+          "mean_in_tokens": 1285.3,
+          "mean_infer_s": 105.28,
+          "mean_edit_sim_pct": 83.6,
+          "mean_f1_pct": 89.35,
+          "mean_combined_pct": 86.47
+        },
+        "Table parsing": {
+          "count": 4,
+          "mean_in_tokens": 2018.5,
+          "mean_infer_s": 43.15,
+          "mean_edit_sim_pct": 47.9,
+          "mean_f1_pct": 62.83,
+          "mean_combined_pct": 55.36
+        },
+        "Document parsing": {
+          "count": 3,
+          "mean_in_tokens": 2860.0,
+          "mean_infer_s": 82.27,
+          "mean_edit_sim_pct": 68.32,
+          "mean_f1_pct": 82.69,
+          "mean_combined_pct": 75.51
+        },
+        "Handwritten content extraction": {
+          "count": 2,
+          "mean_in_tokens": 2279.5,
+          "mean_infer_s": 18.59,
+          "mean_edit_sim_pct": 30.09,
+          "mean_f1_pct": 32.16,
+          "mean_combined_pct": 31.13
+        }
+      },
+      "per_sample": [
+        {
+          "row_idx": 457,
+          "id": "557BFDF4",
+          "task": "Document parsing",
+          "category": "Education",
+          "orig_size": [
+            2481,
+            3508
+          ],
+          "proc_size": [
+            1273,
+            1800
+          ],
+          "in_tokens": 3125,
+          "out_tokens": 1131,
+          "infer_s": 74.663,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 67.57,
+            "cer_pct": 32.43,
+            "f1_pct": 89.55,
+            "combined_score_pct": 78.56
+          }
+        },
+        {
+          "row_idx": 458,
+          "id": "C56EA8A9",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            762,
+            1106
+          ],
+          "proc_size": [
+            762,
+            1106
+          ],
+          "in_tokens": 1325,
+          "out_tokens": 1484,
+          "infer_s": 94.001,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 79.1,
+            "cer_pct": 20.9,
+            "f1_pct": 88.65,
+            "combined_score_pct": 83.87
+          }
+        },
+        {
+          "row_idx": 459,
+          "id": "0B0966A3",
+          "task": "Full-page OCR",
+          "category": "Finance",
+          "orig_size": [
+            741,
+            1067
+          ],
+          "proc_size": [
+            741,
+            1067
+          ],
+          "in_tokens": 1233,
+          "out_tokens": 2022,
+          "infer_s": 125.303,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 86.33,
+            "cer_pct": 13.67,
+            "f1_pct": 90.72,
+            "combined_score_pct": 88.52
+          }
+        },
+        {
+          "row_idx": 462,
+          "id": "56B2C74B",
+          "task": "Full-page OCR",
+          "category": "Technology",
+          "orig_size": [
+            763,
+            1105
+          ],
+          "proc_size": [
+            763,
+            1105
+          ],
+          "in_tokens": 1298,
+          "out_tokens": 1555,
+          "infer_s": 96.542,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 85.38,
+            "cer_pct": 14.62,
+            "f1_pct": 88.67,
+            "combined_score_pct": 87.02
+          }
+        },
+        {
+          "row_idx": 467,
+          "id": "3200C1DB",
+          "task": "Document parsing",
+          "category": "Lifestyle",
+          "orig_size": [
+            1539,
+            2151
+          ],
+          "proc_size": [
+            1287,
+            1800
+          ],
+          "in_tokens": 3189,
+          "out_tokens": 702,
+          "infer_s": 45.507,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 54.01,
+            "cer_pct": 83.28,
+            "f1_pct": 69.51,
+            "combined_score_pct": 61.76
+          }
+        },
+        {
+          "row_idx": 1350,
+          "id": "A91C0516",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            970,
+            621
+          ],
+          "proc_size": [
+            970,
+            621
+          ],
+          "in_tokens": 1015,
+          "out_tokens": 337,
+          "infer_s": 22.262,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 55.81,
+            "cer_pct": 56.03,
+            "f1_pct": 77.32,
+            "combined_score_pct": 66.56
+          }
+        },
+        {
+          "row_idx": 1355,
+          "id": "0E44FCF1",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            768,
+            960
+          ],
+          "proc_size": [
+            768,
+            960
+          ],
+          "in_tokens": 1202,
+          "out_tokens": 480,
+          "infer_s": 31.646,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 20.61,
+            "cer_pct": 100.0,
+            "f1_pct": 8.19,
+            "combined_score_pct": 14.4
+          }
+        },
+        {
+          "row_idx": 1367,
+          "id": "032450D5",
+          "task": "Handwritten content extraction",
+          "category": "Retail",
+          "orig_size": [
+            1346,
+            1795
+          ],
+          "proc_size": [
+            1346,
+            1795
+          ],
+          "in_tokens": 3357,
+          "out_tokens": 50,
+          "infer_s": 5.535,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 39.58,
+            "cer_pct": 100.0,
+            "f1_pct": 56.14,
+            "combined_score_pct": 47.86
+          }
+        },
+        {
+          "row_idx": 2245,
+          "id": "2743E2EC",
+          "task": "Table parsing",
+          "category": "Government",
+          "orig_size": [
+            1242,
+            1583
+          ],
+          "proc_size": [
+            1242,
+            1583
+          ],
+          "in_tokens": 2753,
+          "out_tokens": 1113,
+          "infer_s": 71.373,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 55.52,
+            "cer_pct": 63.35,
+            "f1_pct": 70.04,
+            "combined_score_pct": 62.78
+          }
+        },
+        {
+          "row_idx": 2248,
+          "id": "FA023C09",
+          "task": "Table parsing",
+          "category": "Legal",
+          "orig_size": [
+            680,
+            871
+          ],
+          "proc_size": [
+            680,
+            871
+          ],
+          "in_tokens": 989,
+          "out_tokens": 797,
+          "infer_s": 51.063,
+          "html_tables_extracted": 1,
+          "scores": {
+            "edit_sim_pct": 64.65,
+            "cer_pct": 35.35,
+            "f1_pct": 76.02,
+            "combined_score_pct": 70.33
+          }
+        },
+        {
+          "row_idx": 2249,
+          "id": "2426EF70",
+          "task": "Document parsing",
+          "category": "Insurance",
+          "orig_size": [
+            1200,
+            1311
+          ],
+          "proc_size": [
+            1200,
+            1311
+          ],
+          "in_tokens": 2266,
+          "out_tokens": 2048,
+          "infer_s": 126.627,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 83.38,
+            "cer_pct": 16.62,
+            "f1_pct": 89.02,
+            "combined_score_pct": 86.2
+          }
+        },
+        {
+          "row_idx": 2261,
+          "id": "421E777A",
+          "task": "Table parsing",
+          "category": "Medical",
+          "orig_size": [
+            4032,
+            3024
+          ],
+          "proc_size": [
+            1800,
+            1350
+          ],
+          "in_tokens": 3317,
+          "out_tokens": 395,
+          "infer_s": 27.92,
+          "html_tables_extracted": 0,
+          "scores": {
+            "edit_sim_pct": 15.6,
+            "cer_pct": 100.0,
+            "f1_pct": 27.95,
+            "combined_score_pct": 21.77
+          }
+        }
+      ]
+    },
+    "token_reduction_pct_2b_upgraded_vs_vanilla": 35.9,
+    "speedup_x_2b_upgraded_vs_vanilla": 1.09,
+    "accuracy_delta_pts_2b_upgraded_vs_vanilla": -3.15
+  },
+  "suite_d_multipage_thai_pdfs": {
+    "d1_royal_gazette_full_4p_scanned": {
+      "easyocr_4p": {
+        "pages_processed": 4,
+        "total_chars": 2696,
+        "elapsed_ms": 7149.0,
+        "mean_ms_per_page": 1787.2
+      },
+      "xocr_typhoon_15_2b_bf16_4p": {
+        "pages_processed": 4,
+        "vlm_routed_pages": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "total_chars": 3896,
+        "tables_extracted": 0,
+        "elapsed_ms": 160234.9,
+        "mean_ms_per_page": 40058.7
+      },
+      "xocr_typhoon_15_3b_qat_bf16_4p": {
+        "pages_processed": 4,
+        "vlm_routed_pages": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "total_chars": 5335,
+        "tables_extracted": 0,
+        "elapsed_ms": 181887.1,
+        "mean_ms_per_page": 45471.8
+      }
+    },
+    "d2_nongkhaem_highlighted_contracts_9p_scanned": {
+      "pages_processed": 9,
+      "vlm_routed_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "total_chars": 13952,
+      "tables_extracted": 3,
+      "csv_files": [
+        "table_p1_1.csv",
+        "table_p4_1.csv",
+        "table_p6_1.csv"
+      ],
+      "elapsed_ms": 401978.1,
+      "mean_ms_per_page": 44664.2
+    },
+    "d3_dnp_conservation_report_full_9p_mixed": {
+      "xocr_hybrid_auto_9p": {
+        "pages_processed": 9,
+        "vlm_routed_pages": [
+          2
+        ],
+        "total_chars": 13236,
+        "tables_extracted": 0,
+        "elapsed_ms": 37560.6,
+        "mean_ms_per_page": 4173.4
+      },
+      "vanilla_blind_vlm_all_9p": {
+        "pages_processed": 9,
+        "vlm_routed_pages": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "total_chars": 23112,
+        "tables_extracted": 3,
+        "elapsed_ms": 563297.0,
+        "mean_ms_per_page": 62588.6
+      },
+      "speedup_x": 15.0,
+      "gpu_compute_saved_pct": 88.9
+    },
+    "d4_bma_environment_plan_full_40p_mixed": {
+      "xocr_hybrid_auto_40p": {
+        "pages_processed": 40,
+        "vlm_routed_pages": [],
+        "total_chars": 67464,
+        "tables_extracted": 4,
+        "csv_files_count": 4,
+        "csv_files_sample": [
+          "table_p34_1.csv",
+          "table_p34_2.csv",
+          "table_p34_3.csv",
+          "table_p7_1.csv"
+        ],
+        "elapsed_ms": 752.7,
+        "mean_ms_per_page": 18.8
+      },
+      "vanilla_blind_vlm_40p_projected_from_d3_rate": {
+        "pages_processed": 40,
+        "vlm_routed_pages_count": 40,
+        "measured_vlm_ms_per_page": 62588.6,
+        "projected_elapsed_ms": 2503544.0,
+        "projected_elapsed_min": 41.73
+      },
+      "speedup_x": 3326.1,
+      "gpu_compute_saved_pct": 100.0
+    }
+  },
+  "total_wall_s": 3986.79
+}
