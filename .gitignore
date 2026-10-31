@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+ocr_output/
+_tmp_pages/
+_vlm_stage/
+.DS_Store
