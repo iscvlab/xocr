@@ -15,29 +15,38 @@ High-throughput, zero-corruption PDF & image extraction engine (`/xocr`, legacy 
 ## 1. Speed × Zero-Error Hybrid Architecture
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart LR
-    In["Input: PDF or Image"] --> Router{"XOCR Smart Page Router"}
-    Router -->|"Digital Vector Page"| Fast["Tier 1: C++ PyMuPDF + Booktabs (19-97 ms/page)"]
-    Router -->|"Scanned or Image Page"| Hub{"Pluggable Language VLM Hub"}
+    subgraph Canvas [" "]
+        In["Input: PDF or Image"] --> Router{"XOCR Smart Page Router"}
+        Router -->|"Digital Vector Page"| Fast["Tier 1: C++ PyMuPDF + Booktabs (19-97 ms/page)"]
+        Router -->|"Scanned or Image Page"| Hub{"Pluggable Language VLM Hub"}
 
-    subgraph Profiles ["Language Profiles & VLM Backends"]
-        TH["Thai (LIVE): SCB 10X Typhoon-OCR v1.5 + PUA/Sara-Am Fix"]
-        EN["English / Global (LIVE): Baidu Unlimited-OCR-2"]
-        JP["Japanese (coming soon)"]
-        ZH["Chinese / CJK (coming soon)"]
-        EU["European / Multilingual (coming soon)"]
+        subgraph Profiles ["Language Profiles & VLM Backends"]
+            TH["Thai (LIVE): SCB 10X Typhoon-OCR v1.5 + PUA/Sara-Am Fix"]
+            EN["English / Global (LIVE): Baidu Unlimited-OCR-2"]
+            JP["Japanese (coming soon)"]
+            ZH["Chinese / CJK (coming soon)"]
+            EU["European / Multilingual (coming soon)"]
+        end
+
+        Hub --> TH
+        Hub --> EN
+        Hub -.-> JP
+        Hub -.-> ZH
+        Hub -.-> EU
+
+        Fast --> Surgery["Table & Glyph Surgery (booktabs + HTML rowspan/colspan)"]
+        TH --> Surgery
+        EN --> Surgery
+        Surgery --> Out["Outputs: .md + .csv + .json"]
     end
-
-    Hub --> TH
-    Hub --> EN
-    Hub -.-> JP
-    Hub -.-> ZH
-    Hub -.-> EU
-
-    Fast --> Surgery["Table & Glyph Surgery (booktabs + HTML rowspan/colspan)"]
-    TH --> Surgery
-    EN --> Surgery
-    Surgery --> Out["Outputs: .md + .csv + .json"]
+    classDef default fill:#ffffff,stroke:#475569,color:#0f172a,stroke-width:1px
+    style Canvas fill:#ffffff,stroke:#cbd5e1,stroke-width:1.5px,color:#0f172a
+    style Profiles fill:#f8fafc,stroke:#94a3b8,color:#0f172a
+    style JP fill:#ffffff,stroke:#94a3b8,stroke-dasharray: 5 5,color:#64748b
+    style ZH fill:#ffffff,stroke:#94a3b8,stroke-dasharray: 5 5,color:#64748b
+    style EU fill:#ffffff,stroke:#94a3b8,stroke-dasharray: 5 5,color:#64748b
 ```
 
 ### Core Engineering Guarantees

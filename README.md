@@ -38,61 +38,78 @@
 ### A. How `XOCR` Pairs with Language-Specific VLM Backends
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart LR
-    In["Input: PDF or Image"] --> Router{"XOCR Smart Page Router"}
-    Router -->|"Digital Vector Page"| Fast["Tier 1: C++ PyMuPDF + Booktabs (19-97 ms/page)"]
-    Router -->|"Scanned or Image Page"| Hub{"Pluggable Language VLM Hub"}
+    subgraph Canvas [" "]
+        In["Input: PDF or Image"] --> Router{"XOCR Smart Page Router"}
+        Router -->|"Digital Vector Page"| Fast["Tier 1: C++ PyMuPDF + Booktabs (19-97 ms/page)"]
+        Router -->|"Scanned or Image Page"| Hub{"Pluggable Language VLM Hub"}
 
-    subgraph Profiles ["Language Profiles & VLM Backends"]
-        TH["Thai (LIVE): SCB 10X Typhoon-OCR v1.5 + PUA/Sara-Am Fix"]
-        EN["English / Global (LIVE): Baidu Unlimited-OCR-2"]
-        JP["Japanese (coming soon)"]
-        ZH["Chinese / CJK (coming soon)"]
-        EU["European / Multilingual (coming soon)"]
+        subgraph Profiles ["Language Profiles & VLM Backends"]
+            TH["Thai (LIVE): SCB 10X Typhoon-OCR v1.5 + PUA/Sara-Am Fix"]
+            EN["English / Global (LIVE): Baidu Unlimited-OCR-2"]
+            JP["Japanese (coming soon)"]
+            ZH["Chinese / CJK (coming soon)"]
+            EU["European / Multilingual (coming soon)"]
+        end
+
+        Hub --> TH
+        Hub --> EN
+        Hub -.-> JP
+        Hub -.-> ZH
+        Hub -.-> EU
+
+        Fast --> Surgery["Table & Glyph Surgery (booktabs + HTML rowspan/colspan)"]
+        TH --> Surgery
+        EN --> Surgery
+        Surgery --> Out["Outputs: .md + .csv + .json"]
     end
-
-    Hub --> TH
-    Hub --> EN
-    Hub -.-> JP
-    Hub -.-> ZH
-    Hub -.-> EU
-
-    Fast --> Surgery["Table & Glyph Surgery (booktabs + HTML rowspan/colspan)"]
-    TH --> Surgery
-    EN --> Surgery
-    Surgery --> Out["Outputs: .md + .csv + .json"]
+    classDef default fill:#ffffff,stroke:#475569,color:#0f172a,stroke-width:1px
+    style Canvas fill:#ffffff,stroke:#cbd5e1,stroke-width:1.5px,color:#0f172a
+    style Profiles fill:#f8fafc,stroke:#94a3b8,color:#0f172a
+    style JP fill:#ffffff,stroke:#94a3b8,stroke-dasharray: 5 5,color:#64748b
+    style ZH fill:#ffffff,stroke:#94a3b8,stroke-dasharray: 5 5,color:#64748b
+    style EU fill:#ffffff,stroke:#94a3b8,stroke-dasharray: 5 5,color:#64748b
 ```
 
 ### B. Usage Workflow: CLI & AI Agent Skill (`/xocr`)
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart LR
-    subgraph Step1 ["1. Entry Point"]
-        CLI["Python CLI: ocr_runner.py"]
-        Agent["AI Agent Skill: /xocr"]
-    end
+    subgraph Canvas [" "]
+        subgraph Step1 ["1. Entry Point"]
+            CLI["Python CLI: ocr_runner.py"]
+            Agent["AI Agent Skill: /xocr"]
+        end
 
-    subgraph Step2 ["2. Mode & Model Selection"]
-        Auto["Auto Router (mode: auto)"]
-        T2B["typhoon-2b (Default: Fastest + Most CSVs)"]
-        T3B["typhoon-3b-qat (Best Table & Handwriting)"]
-        T4B["typhoon-3b-4bit (4.3 GB VRAM + Best CER)"]
-    end
+        subgraph Step2 ["2. Mode & Model Selection"]
+            Auto["Auto Router (mode: auto)"]
+            T2B["typhoon-2b (Default: Fastest + Most CSVs)"]
+            T3B["typhoon-3b-qat (Best Table & Handwriting)"]
+            T4B["typhoon-3b-4bit (4.3 GB VRAM + Best CER)"]
+        end
 
-    subgraph Step3 ["3. Structured Outputs"]
-        MD["extracted_document.md"]
-        CSV["table_pX_Y.csv"]
-        JSON["ocr_manifest.json"]
-    end
+        subgraph Step3 ["3. Structured Outputs"]
+            MD["extracted_document.md"]
+            CSV["table_pX_Y.csv"]
+            JSON["ocr_manifest.json"]
+        end
 
-    CLI --> Auto
-    Agent --> Auto
-    Auto --> T2B
-    Auto --> T3B
-    Auto --> T4B
-    T2B --> MD
-    T3B --> CSV
-    T4B --> JSON
+        CLI --> Auto
+        Agent --> Auto
+        Auto --> T2B
+        Auto --> T3B
+        Auto --> T4B
+        T2B --> MD
+        T3B --> CSV
+        T4B --> JSON
+    end
+    classDef default fill:#ffffff,stroke:#475569,color:#0f172a,stroke-width:1px
+    style Canvas fill:#ffffff,stroke:#cbd5e1,stroke-width:1.5px,color:#0f172a
+    style Step1 fill:#f8fafc,stroke:#94a3b8,color:#0f172a
+    style Step2 fill:#f8fafc,stroke:#94a3b8,color:#0f172a
+    style Step3 fill:#f8fafc,stroke:#94a3b8,color:#0f172a
 ```
 
 ### Six Core Engineering Innovations (`ocr_runner.py`)

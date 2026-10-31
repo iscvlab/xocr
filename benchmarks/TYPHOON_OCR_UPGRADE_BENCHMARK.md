@@ -9,24 +9,31 @@
 ## 1. System Architecture: Upstream vs. Upgraded `xocr × Typhoon-OCR v1.5`
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TD
-    subgraph Upstream ["Vanilla scb-10x/typhoon-ocr (v0.4.1)"]
-        U_In["Input PDF / Image"] --> U_Pop["External OS Poppler Subprocesses (pdfinfo + pdftoppm)"]
-        U_Pop --> U_Bug1["Bug #1: resize_if_needed(max_size=1800) upscales >300px images (5.1x token bloat)"]
-        U_Pop --> U_Bug2["Bug #2: image_to_base64png() saves lossy JPEG (q=75) under PNG MIME header"]
-        U_Bug1 --> U_Cloud["Cloud API Default (100% pages sent to VLM - Blind VLM Tax)"]
-        U_Bug2 --> U_Cloud
-    end
+    subgraph Canvas [" "]
+        subgraph Upstream ["Vanilla scb-10x/typhoon-ocr (v0.4.1)"]
+            U_In["Input PDF / Image"] --> U_Pop["External OS Poppler Subprocesses (pdfinfo + pdftoppm)"]
+            U_Pop --> U_Bug1["Bug #1: resize_if_needed(max_size=1800) upscales >300px images (5.1x token bloat)"]
+            U_Pop --> U_Bug2["Bug #2: image_to_base64png() saves lossy JPEG (q=75) under PNG MIME header"]
+            U_Bug1 --> U_Cloud["Cloud API Default (100% pages sent to VLM - Blind VLM Tax)"]
+            U_Bug2 --> U_Cloud
+        end
 
-    subgraph Upgraded ["Upgraded iscvlab/xocr x Typhoon-OCR v1.5 Hybrid Engine (v2.1.0)"]
-        H_In["Input PDF / Image"] --> H_Fitz["Single-Pass C++ PyMuPDF (fitz) Router (Zero Poppler Dependency)"]
-        H_Fitz -->|"Digital Vector Page"| H_Tier1["Tier 1: C++ PyMuPDF Vector + Two-Stage booktabs CSV (~15-97 ms/page)"]
-        H_Fitz -->|"Scanned / Complex Layout Page"| H_Resize["Fixed resize_if_needed(1800) + Lossless PNG (Downscale-only)"]
-        H_Resize --> H_VLM["Tier 2: 100% Local Typhoon-OCR v1.5 (2B bf16 / 3B-QAT bf16 & 4-bit NF4)"]
-        H_VLM --> H_Norm["Thai PUA & Sara-Am Normalizer + HTML table (rowspan/colspan) to CSV & GFM"]
-        H_Tier1 --> H_Out["Unified Output: extracted_document.md + table_pX_Y.csv + ocr_manifest.json"]
-        H_Norm --> H_Out
+        subgraph Upgraded ["Upgraded iscvlab/xocr x Typhoon-OCR v1.5 Hybrid Engine (v2.1.0)"]
+            H_In["Input PDF / Image"] --> H_Fitz["Single-Pass C++ PyMuPDF (fitz) Router (Zero Poppler Dependency)"]
+            H_Fitz -->|"Digital Vector Page"| H_Tier1["Tier 1: C++ PyMuPDF Vector + Two-Stage booktabs CSV (~15-97 ms/page)"]
+            H_Fitz -->|"Scanned / Complex Layout Page"| H_Resize["Fixed resize_if_needed(1800) + Lossless PNG (Downscale-only)"]
+            H_Resize --> H_VLM["Tier 2: 100% Local Typhoon-OCR v1.5 (2B bf16 / 3B-QAT bf16 & 4-bit NF4)"]
+            H_VLM --> H_Norm["Thai PUA & Sara-Am Normalizer + HTML table (rowspan/colspan) to CSV & GFM"]
+            H_Tier1 --> H_Out["Unified Output: extracted_document.md + table_pX_Y.csv + ocr_manifest.json"]
+            H_Norm --> H_Out
+        end
     end
+    classDef default fill:#ffffff,stroke:#475569,color:#0f172a,stroke-width:1px
+    style Canvas fill:#ffffff,stroke:#cbd5e1,stroke-width:1.5px,color:#0f172a
+    style Upstream fill:#f8fafc,stroke:#94a3b8,color:#0f172a
+    style Upgraded fill:#f8fafc,stroke:#94a3b8,color:#0f172a
 ```
 
 ---
