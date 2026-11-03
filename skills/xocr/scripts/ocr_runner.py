@@ -641,14 +641,35 @@ def _resize_image_if_needed(img, max_size=1800):
     return img
 
 
+def _get_torch_device():
+    """Return 'cuda' on NVIDIA GPUs, 'mps' on Apple Silicon Metal, or 'cpu'."""
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            return "cuda"
+        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            return "mps"
+    except ImportError:
+        pass
+    return "cpu"
+
+
+def _has_gpu_accel():
+    """Return True when CUDA or Apple Silicon MPS acceleration is available."""
+    return _get_torch_device() in ("cuda", "mps")
+
+
 def unload_vlm_models():
-    """Explicitly release CUDA VRAM caches between sequential VLM runs."""
+    """Explicitly release CUDA/MPS VRAM caches between sequential VLM runs."""
     gc.collect()
     try:
         import torch
 
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+        elif hasattr(torch, "mps") and hasattr(torch.mps, "empty_cache"):
+            torch.mps.empty_cache()
     except ImportError:
         pass
 
@@ -660,17 +681,19 @@ def _run_typhoon_transformers_vlm(
     max_new_tokens=2048,
     max_image_dim=1800,
 ):
-    """Run SCB 10X Typhoon-OCR v1.5 (Qwen3-VL-2B or Qwen2.5-VL-3B-QAT) 100% locally on GPU."""
+    """Run SCB 10X Typhoon-OCR v1.5 (Qwen3-VL-2B or Qwen2.5-VL-3B-QAT) 100% locally on GPU/MPS."""
     import torch
     from PIL import Image
     from transformers import AutoModelForImageTextToText, AutoProcessor
 
     unload_vlm_models()
+    device = _get_torch_device()
+    use_4bit = bool(load_in_4bit and torch.cuda.is_available())
     load_kwargs = {
-        "device_map": "auto",
+        "device_map": "auto" if device == "cuda" else device,
         "attn_implementation": "sdpa",
     }
-    if load_in_4bit:
+    if use_4bit:
         from transformers import BitsAndBytesConfig
 
         load_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -727,11 +750,11 @@ def _run_typhoon_transformers_vlm(
         del model, processor
         unload_vlm_models()
 
-    suffix = "_4bit" if load_in_4bit else "_bf16"
+    suffix = "_4bit" if use_4bit else "_bf16"
     short_name = model_id.split("/")[-1].lower().replace("-", "_")
     return {
         "vlm_executed": True,
-        "engine": f"hf_{short_name}{suffix}_cuda",
+        "engine": f"hf_{short_name}{suffix}_{device}",
         "vlm_texts": vlm_texts,
     }
 
@@ -771,12 +794,7 @@ def ocr_image_local(image_path, langs=None):
 
             reader = _EASYOCR_READERS.get(lang_key)
             if reader is None:
-                try:
-                    import torch
-
-                    use_gpu = bool(torch.cuda.is_available())
-                except ImportError:
-                    use_gpu = False
+                use_gpu = _has_gpu_accel()
                 try:
                     reader = easyocr.Reader(
                         list(langs), gpu=use_gpu, verbose=False
@@ -824,9 +842,7 @@ def run_vlm_engine(
     # Explicit Typhoon-OCR v1.5 local backends
     if vlm_backend in ("typhoon-2b", "typhoon-3b-qat", "typhoon-3b-4bit"):
         try:
-            import torch
-
-            if torch.cuda.is_available():
+            if _has_gpu_accel():
                 t_model = (
                     "typhoon-ai/typhoon-ocr1.5-2b"
                     if vlm_backend == "typhoon-2b"
@@ -912,12 +928,10 @@ def run_vlm_engine(
                 "stdout_tail": (proc.stdout or "")[-400:],
             }
 
-    # In "auto" mode on CUDA, try Typhoon-OCR v1.5 (2B) first if available, then Unlimited-OCR-2
+    # In "auto" mode on CUDA/MPS, try Typhoon-OCR v1.5 (2B) first if available, then Unlimited-OCR-2
     if vlm_backend == "auto":
         try:
-            import torch
-
-            if torch.cuda.is_available():
+            if _has_gpu_accel():
                 typhoon_env = os.environ.get(
                     "TYPHOON_OCR_MODEL", "typhoon-ai/typhoon-ocr1.5-2b"
                 ).strip()
@@ -931,7 +945,8 @@ def run_vlm_engine(
         try:
             import torch
 
-            if torch.cuda.is_available():
+            device = _get_torch_device()
+            if device in ("cuda", "mps"):
                 from transformers import AutoModel, AutoTokenizer
 
                 unload_vlm_models()
@@ -957,7 +972,7 @@ def run_vlm_engine(
                                 torch_dtype=torch.bfloat16,
                             )
                             .eval()
-                            .cuda()
+                            .to(device)
                         )
                         model_name = cand_model
                         break
@@ -1027,7 +1042,7 @@ def run_vlm_engine(
 
                 return {
                     "vlm_executed": True,
-                    "engine": f"hf_{model_name.split('/')[-1].lower()}_cuda",
+                    "engine": f"hf_{model_name.split('/')[-1].lower()}_{device}",
                     "vlm_texts": vlm_texts,
                 }
         except Exception:  # nosec B110
@@ -1037,7 +1052,7 @@ def run_vlm_engine(
         "vlm_executed": False,
         "engine": "local_fallback",
         "vlm_texts": {},
-        "reason": "No active CUDA/SGLang VLM server; using local OCR engine.",
+        "reason": "No active CUDA/MPS/SGLang VLM server; using local OCR engine.",
     }
 
 

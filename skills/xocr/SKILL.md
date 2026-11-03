@@ -1,14 +1,14 @@
 ---
 name: xocr
 description: >
-  High-speed C++ PyMuPDF vector/booktabs table extractor, Thai/English glyph normalizer, HTML table-to-CSV parser, and 4-tier SCB 10X Typhoon-OCR v1.5, Baidu Unlimited-OCR-2 & EasyOCR engine (/xocr, /ocrx, /ocr, /unlimited-ocr).
-  Use when running /xocr, /ocrx, /ocr, or /unlimited-ocr, or extracting text and CSV tables from PDFs or images.
+  High-speed PyMuPDF vector/booktabs table extractor, Thai/English glyph normalizer, HTML-to-CSV parser, and 4-tier Typhoon-OCR v1.5, Unlimited-OCR-2 & EasyOCR engine (/xocr, /ocr, /unlimited-ocr).
+  Use when running /xocr, /ocr, or /unlimited-ocr, or extracting text and CSV tables from PDFs or images.
   Do NOT use for editable text/CSV files or CAD DWG/DXF drawings.
 ---
 
 # Antigravity XOCR Protocol (`/xocr` v2.1.0)
 
-High-throughput, zero-corruption PDF & image extraction engine (`/xocr`, legacy aliases `/ocrx`, `/ocr`, `/unlimited-ocr`) engineered for **sub-second vector extraction**, **0%-error table & Thai glyph fidelity**, and **100% local offline VLM execution**.
+High-throughput, zero-corruption PDF & image extraction engine (`/xocr`, aliases `/ocr`, `/unlimited-ocr`) engineered for **sub-second vector extraction**, **0%-error table & Thai glyph fidelity**, and **100% local offline VLM execution**.
 
 ---
 
@@ -129,9 +129,9 @@ Other BoostX `/x*` skills automatically invoke [`scripts/ocr_runner.py`](scripts
 
 | Chained / Calling Skill | Automatic `/xocr` Ingestion & Verification Handoff |
 |:---|:---|
-| **[`/xdeep-research`](https://github.com/iscvlab/boostx/blob/main/skills/xdeep-research/SKILL.md)** | **Primary-Source PDF & Table Harvester (Law 1)**: Automatically runs `ocr_runner.py` (with `--pages` when targeted) on statutory PDFs, financial filings, and academic papers, citing exact rows from `table_p*.csv` and `extracted_document.md` with `ocr_manifest.json` receipts. |
+| **[`/xdeep-research`](https://github.com/iscvlab/boostx/blob/main/skills/xdeep-research/SKILL.md)** | **Primary-Source PDF & Table Harvester (Law 1)**: Automatically runs `ocr_runner.py` (with `--pages` when targeted) on technical PDFs, regulatory filings, and academic papers, citing exact rows from `table_p*.csv` and `extracted_document.md` with `ocr_manifest.json` receipts. |
 | **[`/xbrief`](https://github.com/iscvlab/boostx/blob/main/skills/xbrief/SKILL.md)** | **PDF Specification Briefing**: When a user-pinned or canonical workspace specification exists only as a `.pdf` or image plate, runs `ocr_runner.py` first to load structural headings (`## Page N`) and tables into the Briefing Table. |
 | **[`/xlaya`](https://github.com/iscvlab/boostx/blob/main/skills/xlaya/SKILL.md)** | **Sub-Second Section Shortlisting**: Passes `extracted_document.md` headings into `/xlaya` (`shortlist` / `score`) to pinpoint high-signal pages in milliseconds before LLM reading. |
 | **[`/xboost`](https://github.com/iscvlab/boostx/blob/main/skills/xboost/SKILL.md)** | **Zero-Error Quantitative Verification**: Checks `ocr_manifest.json` (`garble_ratio == 0.0`, `tables_extracted > 0`) and cross-verifies CSV column sums (`df.sum()`) against printed "Total" rows. |
-| **[`/xobsidian`](https://github.com/iscvlab/boostx/blob/main/skills/xobsidian/SKILL.md)** | **Clean Second-Brain Distillation**: Runs `ocr_runner.py` before distilling PDF papers or statutory reports into atomic vault notes so `0%` Thai PUA/Sara-Am mojibake or collapsed tables enter `VAULT_ROOT`. |
+| **[`/xobsidian`](https://github.com/iscvlab/boostx/blob/main/skills/xobsidian/SKILL.md)** | **Clean Second-Brain Distillation**: Runs `ocr_runner.py` before distilling PDF papers or technical reports into atomic vault notes so `0%` glyph/encoding corruption or collapsed tables enter `VAULT_ROOT`. |
 | **[`/xultra`](https://github.com/iscvlab/boostx/blob/main/skills/xultra/SKILL.md)** | **Sharded Multi-PDF / Page-Range Swarm (`Pointer-Not-Payload`)**: Shards massive PDF corpora or multi-hundred-page volumes across workers by **disjoint PDF files** or **disjoint `--pages` ranges** (`--pages 1-50`, `--pages 51-100`) writing to isolated `--output` folders and returning Compact Pointer Receipts (`ocr_manifest.json` + `table_p*.csv` paths). |
