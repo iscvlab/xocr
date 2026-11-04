@@ -300,14 +300,20 @@ python benchmarks/run_comprehensive_thai_benchmark.py
 * `ocr_manifest.json`: Per-page audit telemetry (`page`, `char_count`, `table_count`, `garble_ratio`, `image_area_ratio`, `needs_ocr`, `engine`, and `elapsed_ms`).
 
 ### C. Install as an AI Agent Skill (`/xocr`)
+
+> **TL;DR — One-Prompt Agent Install**: Copy and paste this into your AI coding agent (Antigravity, Claude Code, Cursor, Codex, or Grok):
+> ```text
+> Clone https://github.com/iscvlab/xocr and copy skills/xocr into my active agent skills directory (~/.gemini/config/skills/xocr, ~/.claude/skills/xocr, ~/.codex/skills/xocr, or ~/.agents/skills/xocr), then verify SKILL.md and ocr_runner.py are ready.
+> ```
+
 Copy `skills/xocr` into your agent platform's skills directory (or install the full 14-skill **[`iscvlab/boostx`](https://github.com/iscvlab/boostx)** suite):
 
-| Platform | Target Directory | Activation Command |
-|:---|:---|:---|
-| **Google Antigravity (`IDE` & `agy` CLI)** | `~/.gemini/config/skills/xocr` | `/xocr` (auto-invoked by `/xdeep-research`, `/xbrief`, `/xboost`, `/xobsidian`, `/xultra`) |
-| **Claude Code** | `~/.claude/skills/xocr` | `/xocr` |
-| **Grok** | `~/.grok/skills/xocr` | `/xocr` |
-| **Cursor / Codex** | `.agents/skills/xocr` | `/xocr` |
+| Platform | Target Directory | Activation Command | Verification Status |
+|:---|:---|:---|:---|
+| **Google Antigravity (`IDE` & `agy` CLI)** | `~/.gemini/config/skills/xocr` | `/xocr` (auto-invoked by `/xdeep-research`, `/xbrief`, `/xboost`, `/xobsidian`, `/xultra`) | `tested` (Windows 11 + RTX 5060 Ti 16 GB) |
+| **Claude Code** | `~/.claude/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
+| **Grok** | `~/.grok/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
+| **Cursor / Codex** | `~/.agents/skills/xocr` or `~/.codex/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
 
 ---
 

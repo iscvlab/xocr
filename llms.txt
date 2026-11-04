@@ -1,0 +1,10 @@
+# XOCR (iscvlab/xocr)
+
+> Hybrid Document AI, PyMuPDF vector/booktabs table surgery, Thai PUA (`U+F700..U+F71A`) and Sara-Am glyph normalizer, and 4-tier local OCR CLI engine (`Typhoon-OCR v1.5`, `Baidu Unlimited-OCR-2`, and `EasyOCR`).
+
+## Core Entrypoints & Documentation
+
+- [README.md](README.md): Architecture, benchmarks, one-prompt agent installer, and CLI usage.
+- [ocr_runner.py](ocr_runner.py): Standalone CLI engine (`--mode text|tables|hybrid`, `--engine auto|pymupdf|typhoon|unlimited|easyocr`, `--check`).
+- [skills/xocr/SKILL.md](skills/xocr/SKILL.md): Agent skill specification (`/xocr`, `/ocr`, `/unlimited-ocr`).
+- [benchmarks/TYPHOON_OCR_UPGRADE_BENCHMARK.md](benchmarks/TYPHOON_OCR_UPGRADE_BENCHMARK.md): Reproducible latency and accuracy benchmarks, including upstream PR #15 to `scb-10x/typhoon-ocr`.
