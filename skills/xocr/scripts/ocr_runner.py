@@ -314,10 +314,14 @@ def extract_tables_from_page(page, fitz_mod, raw_text=""):
     if h_rules_cnt < 3 and g_rects_cnt < 8:
         return extracted
 
-    if len(drawings) > 200 and not re.search(
-        r"(?:^|\n)\s*(?:Table|Tab\.|ตาราง)\s*\d*\s*[:.|]",
-        raw_text or "",
-        re.IGNORECASE,
+    if (
+        len(drawings) > 200
+        and g_rects_cnt < 12
+        and not re.search(
+            r"(?:^|\n)\s*(?:Table|Tab\.|ตาราง)\s*(?:\d+|[IVXLCDM]+)?\s*[:.|\-–—]",
+            raw_text or "",
+            re.IGNORECASE,
+        )
     ):
         return extracted
 
@@ -397,7 +401,7 @@ def extract_tables_from_page(page, fitz_mod, raw_text=""):
             near_txt = page.get_text("text", clip=near_rect) or ""
             top_txt = (page.get_text("text", clip=top_rect) or "").strip()
             if re.search(
-                r"(?:^|\n)\s*(?:Table|Tab\.|ตาราง)\s*\d+\s*[:.|]",
+                r"(?:^|\n)\s*(?:Table|Tab\.|ตาราง)\s*(?:\d+[A-Za-z]?|[IVXLCDM]+)\s*[:.|\-–—\s]",
                 near_txt,
                 re.IGNORECASE,
             ) and not re.match(
