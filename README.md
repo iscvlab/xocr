@@ -307,7 +307,7 @@ python benchmarks/run_comprehensive_thai_benchmark.py
 > Clone https://github.com/iscvlab/xocr and copy skills/xocr into my active agent skills directory (~/.gemini/config/skills/xocr, ~/.claude/skills/xocr, ~/.codex/skills/xocr, or ~/.agents/skills/xocr), then verify SKILL.md and ocr_runner.py are ready.
 > ```
 
-Copy `skills/xocr` into your agent platform's skills directory (or install the full 14-skill **[`iscvlab/boostx`](https://github.com/iscvlab/boostx)** suite):
+Copy `skills/xocr` into your agent platform's skills directory (or install the full 13-skill **[`iscvlab/boostx`](https://github.com/iscvlab/boostx)** suite):
 
 | Platform | Target Directory | Activation Command | Verification Status |
 |:---|:---|:---|:---|
