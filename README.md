@@ -9,7 +9,7 @@
 [![Long-Doc VLM](https://img.shields.io/badge/Long--Doc%20VLM-baidu%2FUnlimited--OCR--2-2563EB?style=flat-square)](https://github.com/baidu/Unlimited-OCR)
 [![Lab](https://img.shields.io/badge/Lab-ISCV%20%7C%20Isocurve%20Research%20Lab%20(%40iscvlab)-121417?style=flat-square)](https://github.com/iscvlab)
 
-**XOCR** (`iscvlab/xocr`, slash command `/xocr`, legacy aliases `/ocrx`, `/ocr`, `/unlimited-ocr`) is a high-throughput, zero-corruption **PDF & Image Document AI Engine** engineered by **[ISCV | Isocurve Research Lab (`@iscvlab`)](https://github.com/iscvlab)**. It runs both as a **standalone Python CLI (`ocr_runner.py`)** for data science and financial/statutory ETL pipelines and as a **portable AI Agent Skill (`skills/xocr/SKILL.md`)** across **Google Antigravity (`IDE` & `agy` CLI), Claude Code, Grok, Cursor, and Codex** (upstream improvements contributed to **[`scb-10x/typhoon-ocr` Pull Request #15](https://github.com/scb-10x/typhoon-ocr/pull/15)** and ported to Rust in **[`xerj-org/xerj` Pull Request #2925](https://github.com/xerj-org/xerj/pull/2925)**).
+**XOCR** (`iscvlab/xocr`, slash command `/xocr`, legacy aliases `/ocrx`, `/ocr`, `/unlimited-ocr`) is a high-throughput, zero-corruption **PDF & Image Document AI Engine** engineered by **[ISCV | Isocurve Research Lab (`@iscvlab`)](https://github.com/iscvlab)**. It runs both as a **standalone Python CLI (`ocr_runner.py`)** for data science and financial/statutory ETL pipelines and as a **portable AI Agent Skill (`skills/xocr/SKILL.md`)** across **any AI coding agent — cloud, IDE, CLI, or local LLM** (`Claude`, `Grok`, `Gemini`, `Cursor`, `Codex`, `Ollama`, `OpenHands`, `Cline`, etc.; upstream improvements contributed to **[`scb-10x/typhoon-ocr` Pull Request #15](https://github.com/scb-10x/typhoon-ocr/pull/15)** and ported to Rust in **[`xerj-org/xerj` Pull Request #2925](https://github.com/xerj-org/xerj/pull/2925)**).
 
 ---
 
@@ -302,19 +302,19 @@ python benchmarks/run_comprehensive_thai_benchmark.py
 
 ### C. Install as an AI Agent Skill (`/xocr`)
 
-> **TL;DR — One-Prompt Agent Install**: Copy and paste this into your AI coding agent (Antigravity, Claude Code, Cursor, Codex, or Grok):
+> **TL;DR — One-Prompt Universal Agent Install**: Copy and paste this into **any AI coding agent — cloud, IDE, CLI, or local LLM** (`Claude`, `Grok`, `Gemini`, `Cursor`, `Codex`, `Ollama`, `OpenHands`, `Cline`, etc.):
 > ```text
-> Clone https://github.com/iscvlab/xocr and copy skills/xocr into my active agent skills directory (~/.gemini/config/skills/xocr, ~/.claude/skills/xocr, ~/.codex/skills/xocr, or ~/.agents/skills/xocr), then verify SKILL.md and ocr_runner.py are ready.
+> Clone https://github.com/iscvlab/xocr and copy skills/xocr into my active agent skills directory (~/.gemini/config/skills/xocr, ~/.claude/skills/xocr, ~/.codex/skills/xocr, ~/.agents/skills/xocr, or my local ~/.*/skills/xocr root), then verify SKILL.md and ocr_runner.py are ready.
 > ```
 
 Copy `skills/xocr` into your agent platform's skills directory (or install the full 13-skill **[`iscvlab/boostx`](https://github.com/iscvlab/boostx)** suite):
 
-| Platform | Target Directory | Activation Command | Verification Status |
+| Agent Class / Host | Target Skill Directory | Activation Command | Verification Status |
 |:---|:---|:---|:---|
-| **Google Antigravity (`IDE` & `agy` CLI)** | `~/.gemini/config/skills/xocr` | `/xocr` (auto-invoked by `/xdeep-research`, `/xbrief`, `/xboost`, `/xobsidian`, `/xultra`) | `tested` (Windows 11 + RTX 5060 Ti 16 GB) |
-| **Claude Code** | `~/.claude/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
-| **Grok** | `~/.grok/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
-| **Cursor / Codex** | `~/.agents/skills/xocr` or `~/.codex/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
+| **Any AI Agent (`Cloud • IDE • CLI • Local LLM`)** | `~/.*/skills/xocr` or `<repo>/.agents/skills/xocr` | `/xocr` | `universal` (`100%` agent-agnostic `<SKILL_DIR>` CLI resolution) |
+| **Google Gemini / Antigravity (`IDE` & `agy` CLI)** | `~/.gemini/config/skills/xocr` or `~/.gemini/skills/xocr` | `/xocr` (auto-invoked by `/xdeep-research`, `/xbrief`, `/xboost`, `/xobsidian`, `/xultra`) | `tested` (Windows 11 + RTX 5060 Ti 16 GB) |
+| **Claude Code / Desktop** | `~/.claude/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
+| **Grok / Cursor / Codex / Windsurf / Cline / OpenHands** | `~/.grok/skills/xocr`, `~/.agents/skills/xocr`, or `~/.codex/skills/xocr` | `/xocr` | `spec-compatible` (`SKILL.md` standard + standalone Python CLI) |
 
 ---
 

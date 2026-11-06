@@ -6,7 +6,7 @@ description: >
   Do NOT use for editable text/CSV files or CAD DWG/DXF drawings.
 ---
 
-# Antigravity XOCR Protocol (`/xocr` v2.1.0)
+# XOCR Document & Table Extraction Protocol (`/xocr` v2.1.0)
 
 High-throughput, zero-corruption PDF & image extraction engine (`/xocr`, aliases `/ocr`, `/unlimited-ocr`) engineered for **sub-second vector extraction**, **0%-error table & Thai glyph fidelity**, and **100% local offline VLM execution**.
 
@@ -72,9 +72,11 @@ flowchart LR
 
 ## 2. Deterministic CLI Execution
 
+Run [`scripts/ocr_runner.py`](scripts/ocr_runner.py) relative to this skill's directory (`<SKILL_DIR>`):
+
 **macOS / Linux**:
 ```bash
-python3 ~/.gemini/config/skills/xocr/scripts/ocr_runner.py "<path_to_pdf_or_image>" \
+python3 "<SKILL_DIR>/scripts/ocr_runner.py" "<path_to_pdf_or_image>" \
   --output "<output_dir>" \
   --mode auto \
   --vlm-backend auto \
@@ -84,7 +86,7 @@ python3 ~/.gemini/config/skills/xocr/scripts/ocr_runner.py "<path_to_pdf_or_imag
 
 **Windows (PowerShell)**:
 ```powershell
-python "$env:USERPROFILE\.gemini\config\skills\xocr\scripts\ocr_runner.py" "<path_to_pdf_or_image>" `
+python "<SKILL_DIR>/scripts/ocr_runner.py" "<path_to_pdf_or_image>" `
   --output "<output_dir>" `
   --mode auto `
   --vlm-backend auto `
